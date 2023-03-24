@@ -83,12 +83,16 @@ class Baca(App):
 
     def load_everything(self):
         content = Content(self.ebook)
+        # NOTE: using a message instead of calling
+        # the callback directly to make sure that the app is ready
+        # before calling the callback, since this message will
+        # get processed after app ready and composed
+        # (self._screen_stack isn't empty)
+        # see: Widget.on_event(), App._process_message()
         self.post_message(DoneLoading(content))
 
     async def on_done_loading(self, event: DoneLoading) -> None:
         # to be safe, unnecessary?
-        # seems unnecessary, since App.on_event() & App._process_message()
-        # indicate that a screen will be pushed before processing a message
         # while self.screen is None:
         #     await asyncio.sleep(0.1)
 
