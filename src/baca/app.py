@@ -67,6 +67,11 @@ class Baca(App):
         self.screen.styles.layers = (layer.value for layer in Layers)
         self.screen.can_focus = True
         # setattr(self.screen, "on_resize", self.action_open_toc)
+        # setattr(self.screen, "on_click", on_click)
+
+    # TODO: move this to self.screen
+    # async def on_click(self):
+    #     self.query("Window").remove()
 
     def compose(self) -> ComposeResult:
         yield self.loader
@@ -80,11 +85,13 @@ class Baca(App):
         self.post_message(DoneLoading(content))
 
     async def on_done_loading(self, event: DoneLoading) -> None:
+        # to be safe, unnecessary?
+        while self.screen is None:
+            await asyncio.sleep(0.1)
+
         # NOTE: awaiting is necessary to prevent broken layout
         await self.mount(event.content)
         self.loader.remove()
-        # TODO: temp workaround
-        # self.screen.focus()
 
     async def action_open_metadata(self) -> None:
         if self.metadata is None:
