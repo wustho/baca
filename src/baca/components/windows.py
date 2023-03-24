@@ -11,9 +11,10 @@ from textual.widgets import DataTable, Static
 
 from ..models import Layers, TocEntry, BookMetadata
 from .events import FollowThis
+from .contents import Table
 
 
-# NOTE: Widget seems weird when being inherited
+# TODO: Widget seems weird when being inherited
 async def _window_on_key(obj: Widget, event: events.Key) -> None:
     callback = {
         **{k: obj.action_close for k in ["q", "escape"]},
@@ -50,7 +51,11 @@ def _window_on_mount(obj: Widget) -> None:
     obj.styles.border_title_align = "center"
 
 
-class Alert(Widget):
+class Window(Widget):
+    pass
+
+
+class Alert(Window):
     border_title = "❗"
     can_focus = True
 
@@ -73,7 +78,7 @@ class Alert(Widget):
         return Text(self.message, justify="center", style="bold")
 
 
-class Metadata(Widget):
+class Metadata(Window):
     border_title = "Metadata"
     can_focus = True
 
@@ -94,19 +99,7 @@ class Metadata(Widget):
         await _window_on_key(self, event)
 
     def compose(self) -> ComposeResult:
-        # for i in range(50):
-        #     yield Static(str(i))
-        table = DataTable()
-        # NOTE: height & width important so table will overflow Metadata
-        # instead of its ScrollView parent widget
-        table.styles.height = "auto"
-        table.styles.width = "auto"
-        table.can_focus = False
-        table.zebra_stripes = True
-        table.show_cursor = False
-        table.add_columns("key", "value")
-        table.add_rows([(k, v) for k, v in asdict(self.metadata).items()])
-        yield table
+        yield Table(headers=["key", "value"], rows=[(k, v) for k, v in asdict(self.metadata).items()])
 
 
 class FollowButton(Widget):
@@ -151,7 +144,7 @@ class FollowButton(Widget):
         self.action_follow_this()
 
 
-class ToC(Widget):
+class ToC(Window):
     border_title = "Table of Contents"
 
     def __init__(self, entries: list[TocEntry], initial_focused_id: str | None = None):

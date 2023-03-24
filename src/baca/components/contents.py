@@ -3,7 +3,7 @@ from rich.text import Text
 from textual import events
 from textual.app import ComposeResult
 from textual.widget import Widget
-from textual.widgets import LoadingIndicator, Static
+from textual.widgets import LoadingIndicator, Static, DataTable
 from textual.widgets.markdown import Markdown as PrettyMarkdown
 
 from ..ebooks import Ebook
@@ -11,6 +11,23 @@ from ..models import Layers, SegmentType
 from .events import OpenThisImage
 
 WIDTH = 80
+
+
+class Table(DataTable):
+    can_focus = False
+
+    def __init__(self, headers: list[str], rows: list[tuple]):
+        super().__init__(show_header=True, zebra_stripes=True, show_cursor=False)
+        self.add_columns(*headers)
+        self.add_rows(rows)
+
+    def on_mount(self) -> None:
+        # NOTE: height & width important so table will overflow Metadata
+        # instead of its ScrollView parent widget
+        self.styles.height = "auto"
+        self.styles.width = "auto"
+        self.zebra_stripes = True
+        self.show_cursor = False
 
 
 class SegmentWidget(Widget):
