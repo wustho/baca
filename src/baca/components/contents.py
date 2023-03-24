@@ -9,8 +9,7 @@ from textual.widgets.markdown import Markdown as PrettyMarkdown
 from ..ebooks import Ebook
 from ..models import Layers, SegmentType
 from .events import OpenThisImage
-
-WIDTH = 80
+from ..config import config
 
 
 class Table(DataTable):
@@ -44,7 +43,7 @@ class Body(SegmentWidget):
 
     def render(self):
         # return Text(" ".join([str(i) for i in range(1000)]), style="italic")
-        return Markdown(self._src, justify="full")
+        return Markdown(self._src, justify=config.text_justification)
 
 
 class Image(SegmentWidget):
@@ -100,8 +99,7 @@ class Content(Widget):
             if segment.type == SegmentType.SECTION:
                 component_cls = Section
             elif segment.type == SegmentType.BODY:
-                # component_cls = PrettyBody
-                component_cls = Body
+                component_cls = Body if not config.pretty else PrettyBody
             else:
                 component_cls = Image
             self._segment_widgets.append(component_cls(segment.content))
@@ -110,11 +108,18 @@ class Content(Widget):
     def sections(self) -> list[Section]:
         return [comp for comp in self._segment_widgets if isinstance(comp, Section)]
 
+    def scroll_to_section(self, id: str) -> None:
+        # TODO: add attr TocEntry.uuid so we can query("#{uuid}")
+        for s in self.sections:
+            if s.id == id:
+                s.scroll_visible(top=True)
+                break
+
     def on_mount(self) -> None:
         self.styles.layout = "vertical"
         self.styles.height = "auto"
         self.styles.layer = Layers.CONTENT.value
-        self.styles.max_width = WIDTH
+        self.styles.max_width = config.max_text_width
         self.styles.margin = (0, 2)
 
     def on_mouse_scroll_down(self, _: events.MouseScrollDown) -> None:

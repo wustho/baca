@@ -20,25 +20,21 @@ from .components.events import DoneLoading, FollowThis, OpenThisImage
 from .components.windows import Alert, Metadata, ToC
 from .ebooks import Ebook
 from .models import Layers
+from .config import config
 
 
+# TODO: reorganize methods order
 class Baca(App):
     def __init__(self, ebook: Ebook):
         super().__init__()
         # TODO: move initializing ebook to self.load_everything()
         self.ebook = ebook
-        # self._action_targets = {"screen"}
 
     def debug(self) -> None:
-        # self.log("=======", self.screen.scroll_y, self.screen.scroll_target_y)
-        # results = list(self.query("Section").results())
-        # self.log("=======", results[8].virtual_region)
-        # self.log("-------", self.focused)
-        # self._loop.run_in_executor(None, self.alert("asfsdfasd"))
-        pass
+        self.log(None)
 
     async def debug_async(self) -> None:
-        await self.alert("asfsdf\n" * 50)
+        self.log(None)
 
     async def alert(self, message: str) -> None:
         alert = Alert(message)
@@ -47,17 +43,20 @@ class Baca(App):
 
     async def on_key(self, event: events.Key) -> None:
         callback = {
-            **{k: self.action_quit for k in ["q", "escape"]},
-            **{k: self.screen.action_scroll_down for k in ["j", "down"]},
-            **{k: self.screen.action_scroll_up for k in ["k", "up"]},
-            "M": self.action_open_metadata,
-            "c": self.action_toggle_dark,
-            "tab": self.action_open_toc,
-            "ctrl+f": self.screen.action_page_down,
-            "ctrl+b": self.screen.action_page_up,
-            "f11": lambda: self.save_screenshot(f"baca_{datetime.now().isoformat()}.svg"),
+            **{k: self.action_quit for k in config.keybindings.close},
+            **{k: self.screen.action_scroll_down for k in config.keybindings.scroll_down},
+            **{k: self.screen.action_scroll_up for k in config.keybindings.scroll_up},
+            **{k: self.screen.action_page_down for k in config.keybindings.page_down},
+            **{k: self.screen.action_page_up for k in config.keybindings.page_up},
+            **{k: self.action_open_toc for k in config.keybindings.open_toc},
+            **{k: self.action_open_metadata for k in config.keybindings.open_metadata},
+            **{k: self.action_toggle_dark for k in config.keybindings.toggle_dark},
+            **{
+                k: lambda: self.save_screenshot(f"baca_{datetime.now().isoformat()}.svg")
+                for k in config.keybindings.screenshot
+            },
             # "D": self.debug,
-            "D": self.debug_async,
+            # "D": self.debug_async,
         }.get(event.key)
 
         if callback is not None:
@@ -72,8 +71,6 @@ class Baca(App):
         self.screen.styles.scrollbar_size_vertical = 1
         self.screen.styles.layers = (layer.value for layer in Layers)
         self.screen.can_focus = True
-        # setattr(self.screen, "on_resize", self.action_open_toc)
-        # setattr(self.screen, "on_click", on_click)
 
     # TODO: move this to self.screen
     # async def on_click(self):
@@ -118,7 +115,7 @@ class Baca(App):
                 return await self.alert("No content navigations for this ebook.")
 
             initial_focused_id: str | None = None
-            for s in self.content.sections:  # type: ignore
+            for s in self.content.sections:
                 if self.screen.scroll_y >= s.virtual_region.y:
                     initial_focused_id = s.id
                 # TODO: check why breaking here not working
@@ -131,12 +128,7 @@ class Baca(App):
             toc.focus(False)
 
     async def on_follow_this(self, message: FollowThis) -> None:
-        # TODO: add attr TocEntry.uuid so query("#{uuid}")
-        for s in self.content.sections:  # type: ignore
-            if s.id == message.value:
-                s.scroll_visible(top=True)
-                break
-
+        self.content.scroll_to_section(message.value)
         # NOTE: remove after refresh so the event get handled
         self.call_after_refresh(self.toc.remove)  # type: ignore
 
@@ -178,5 +170,5 @@ class Baca(App):
             return None
 
     @property
-    def content(self) -> Content | None:
+    def content(self) -> Content:
         return self.query_one(Content.__name__, Content)

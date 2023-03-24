@@ -8,7 +8,7 @@ class DoneLoading(Message):
 
 
 class FollowThis(Message):
-    def __init__(self, value: str | int):
+    def __init__(self, value: str):
         super().__init__()
         self.value = value
 
