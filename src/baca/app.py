@@ -17,7 +17,7 @@ from textual.widgets import LoadingIndicator
 
 from .components.contents import Content
 from .components.events import DoneLoading, FollowThis, OpenThisImage
-from .components.windows import Alert, ToC, Metadata
+from .components.windows import Alert, Metadata, ToC
 from .ebooks import Ebook
 from .models import Layers
 
@@ -38,7 +38,7 @@ class Baca(App):
         pass
 
     async def debug_async(self) -> None:
-        await self.alert("asfsdf\n"*50)
+        await self.alert("asfsdf\n" * 50)
 
     async def alert(self, message: str) -> None:
         alert = Alert(message)

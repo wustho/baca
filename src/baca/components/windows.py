@@ -1,5 +1,5 @@
-from dataclasses import asdict
 import inspect
+from dataclasses import asdict
 
 from rich.text import Text
 from textual import events
@@ -9,9 +9,9 @@ from textual.message import Message
 from textual.widget import Widget
 from textual.widgets import DataTable, Static
 
-from ..models import Layers, TocEntry, BookMetadata
-from .events import FollowThis
+from ..models import BookMetadata, Layers, TocEntry
 from .contents import Table
+from .events import FollowThis
 
 
 class Window(Widget):
@@ -66,6 +66,7 @@ class Alert(Window):
         self.styles.border = ("solid", "darkred")
         self.styles.color = "darkred"
         self.styles.border_title_align = "center"
+        self.styles.scrollbar_color = "darkred"
 
     def compose(self) -> ComposeResult:
         yield Static(self.message)

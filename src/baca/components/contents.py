@@ -3,7 +3,7 @@ from rich.text import Text
 from textual import events
 from textual.app import ComposeResult
 from textual.widget import Widget
-from textual.widgets import LoadingIndicator, Static, DataTable
+from textual.widgets import DataTable, LoadingIndicator, Static
 from textual.widgets.markdown import Markdown as PrettyMarkdown
 
 from ..ebooks import Ebook
