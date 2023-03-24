@@ -28,6 +28,7 @@ class Baca(App):
         # move initializing ebook to self.load_everything()
         self.ebook = ebook
         self.loader = LoadingIndicator()
+        # self._action_targets = {"screen"}
 
     def debug(self) -> None:
         # self.log("=======", self.screen.scroll_y, self.screen.scroll_target_y)
@@ -86,8 +87,10 @@ class Baca(App):
 
     async def on_done_loading(self, event: DoneLoading) -> None:
         # to be safe, unnecessary?
-        while self.screen is None:
-            await asyncio.sleep(0.1)
+        # seems unnecessary, since App.on_event() & App._process_message()
+        # indicate that a screen will be pushed before processing a message
+        # while self.screen is None:
+        #     await asyncio.sleep(0.1)
 
         # NOTE: awaiting is necessary to prevent broken layout
         await self.mount(event.content)
