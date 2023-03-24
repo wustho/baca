@@ -97,7 +97,7 @@ class Metadata(Window):
 class FollowButton(Widget):
     DEFAULT_CSS = """
     FollowButton:focus {
-        background: red;
+        background: $primary;
     }
     """
     can_focus = True
@@ -125,7 +125,7 @@ class FollowButton(Widget):
         self.styles.height = "auto"
         self.styles.border = ("tall", "grey")
         self.styles.margin = (0, 1, 1, 0)
-        self.styles.padding = (0, 1)
+        self.styles.padding = (0, 5)
 
     def render(self):
         return self.label
@@ -148,6 +148,16 @@ class ToC(Window):
     def on_mount(self) -> None:
         self.styles.border = ("double", self.styles.scrollbar_color)
 
+        if len(self.entries):
+            if self.initial_focused_id is None:
+                self.entry_widgets[0].focus()
+            else:
+                for w in self.entry_widgets:
+                    if w.value == self.initial_focused_id:
+                        w.focus()
+                        w.scroll_visible(top=True)
+                        break
+
     async def on_key(self, event: events.Key) -> None:
         callback = {
             **{k: self.action_close for k in ["q", "escape", "tab"]},
@@ -162,19 +172,6 @@ class ToC(Window):
 
         event.stop()
         event.prevent_default()  # stopping the event from being handled by base class
-
-    def render(self):
-        if len(self.entries):
-            if self.initial_focused_id is None:
-                self.entry_widgets[0].focus()
-            else:
-                for w in self.entry_widgets:
-                    if w.value == self.initial_focused_id:
-                        w.focus()
-                        w.scroll_visible(top=True)
-                        break
-
-        return super().render()
 
     # TODO: simplify
     def action_focus_next_child(self) -> None:
