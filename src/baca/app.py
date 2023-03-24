@@ -25,16 +25,20 @@ from .models import Layers
 class Baca(App):
     def __init__(self, ebook: Ebook):
         super().__init__()
-        # move initializing ebook to self.load_everything()
+        # TODO: move initializing ebook to self.load_everything()
         self.ebook = ebook
-        self.loader = LoadingIndicator()
         # self._action_targets = {"screen"}
 
     def debug(self) -> None:
         # self.log("=======", self.screen.scroll_y, self.screen.scroll_target_y)
         # results = list(self.query("Section").results())
         # self.log("=======", results[8].virtual_region)
-        self.log("-------", self.focused)
+        # self.log("-------", self.focused)
+        # self._loop.run_in_executor(None, self.alert("asfsdfasd"))
+        pass
+
+    async def debug_async(self) -> None:
+        await self.alert("asfsdf\n"*50)
 
     async def alert(self, message: str) -> None:
         alert = Alert(message)
@@ -52,7 +56,8 @@ class Baca(App):
             "ctrl+f": self.screen.action_page_down,
             "ctrl+b": self.screen.action_page_up,
             "f11": lambda: self.save_screenshot(f"baca_{datetime.now().isoformat()}.svg"),
-            "l": self.debug,
+            # "D": self.debug,
+            "D": self.debug_async,
         }.get(event.key)
 
         if callback is not None:
@@ -75,7 +80,7 @@ class Baca(App):
     #     self.query("Window").remove()
 
     def compose(self) -> ComposeResult:
-        yield self.loader
+        yield LoadingIndicator(id="startup-loader")
 
     def on_load(self, _: events.Load) -> None:
         assert self._loop is not None
@@ -98,7 +103,7 @@ class Baca(App):
 
         # NOTE: awaiting is necessary to prevent broken layout
         await self.mount(event.content)
-        self.loader.remove()
+        self.get_widget_by_id("startup-loader", LoadingIndicator).remove()
 
     async def action_open_metadata(self) -> None:
         if self.metadata is None:

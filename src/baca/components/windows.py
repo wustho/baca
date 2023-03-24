@@ -14,45 +14,44 @@ from .events import FollowThis
 from .contents import Table
 
 
-# TODO: Widget seems weird when being inherited
-async def _window_on_key(obj: Widget, event: events.Key) -> None:
-    callback = {
-        **{k: obj.action_close for k in ["q", "escape"]},
-        **{k: obj.action_scroll_down for k in ["j", "down"]},
-        **{k: obj.action_scroll_up for k in ["k", "up"]},
-        "ctrl+f": obj.action_page_down,
-        "ctrl+b": obj.action_page_up,
-    }.get(event.key)
-
-    if callback is not None:
-        try:
-            return_value = callback()
-            if inspect.isawaitable(return_value):
-                await return_value
-        except SkipAction:
-            pass
-
-    event.stop()
-    event.prevent_default()
-
-
-def _window_on_mount(obj: Widget) -> None:
-    obj.focus()
-    # self.styles.background = "blue"
-    obj.styles.dock = "top"
-    obj.styles.border = ("double", obj.styles.scrollbar_color)
-    obj.styles.layer = Layers.WINDOWS.value
-    obj.styles.margin = (int(0.1 * obj.screen.size.height), int(0.1 * obj.screen.size.width))
-    # obj.styles.width = "90%"
-    # obj.styles.height = "90%"
-    obj.styles.padding = (1, 4)
-    obj.styles.scrollbar_size_vertical = 1
-    obj.styles.overflow_y = "auto"
-    obj.styles.border_title_align = "center"
-
-
 class Window(Widget):
-    pass
+    async def on_key(self, event: events.Key) -> None:
+        callback = {
+            # NOTE: somehow cannot be bound directly
+            # to self.remove for closing, doing it will freeze the app
+            # so self.action_close
+            **{k: self.action_close for k in ["q", "escape"]},
+            **{k: self.action_scroll_down for k in ["j", "down"]},
+            **{k: self.action_scroll_up for k in ["k", "up"]},
+            "ctrl+f": self.action_page_down,
+            "ctrl+b": self.action_page_up,
+        }.get(event.key)
+
+        if callback is not None:
+            try:
+                return_value = callback()
+                if inspect.isawaitable(return_value):
+                    await return_value
+            except SkipAction:
+                pass
+
+        event.stop()
+        event.prevent_default()
+
+    def on_mount(self) -> None:
+        # Somehow cannot set border on base class,
+        # this will overriding border set on inherited class
+        # self.styles.border = ("double", self.styles.scrollbar_color)
+        self.styles.dock = "top"
+        self.styles.layer = Layers.WINDOWS.value
+        self.styles.margin = (int(0.1 * self.screen.size.height), int(0.1 * self.screen.size.width))
+        self.styles.padding = (1, 4)
+        self.styles.scrollbar_size_vertical = 1
+        self.styles.overflow_y = "auto"
+        self.styles.border_title_align = "center"
+
+    def action_close(self) -> None:
+        self.remove()
 
 
 class Alert(Window):
@@ -64,18 +63,17 @@ class Alert(Window):
         self.message = message
 
     def on_mount(self) -> None:
-        _window_on_mount(self)
-        self.styles.padding = 5
-        # self.styles.align = ("center", "middle")
         self.styles.border = ("solid", "darkred")
         self.styles.color = "darkred"
         self.styles.border_title_align = "center"
 
-    async def on_key(self, event: events.Key) -> None:
-        await _window_on_key(self, event)
+    def compose(self) -> ComposeResult:
+        yield Static(self.message)
 
-    def render(self):
-        return Text(self.message, justify="center", style="bold")
+    # NOTE: self.render() is low level API
+    # so, this won't be any auto scroll-overflow
+    # use self.compose() instead
+    # def render(self):
 
 
 class Metadata(Window):
@@ -86,17 +84,10 @@ class Metadata(Window):
         super().__init__()
         self.metadata = metadata
 
-    def action_close(self) -> None:
-        self.remove()
-
     def on_mount(self) -> None:
-        _window_on_mount(self)
-        # self.styles.padding = 5
+        self.styles.border = ("double", self.styles.scrollbar_color)
         self.styles.border_title_align = "center"
         self.styles.align = ("center", "top")
-
-    async def on_key(self, event: events.Key) -> None:
-        await _window_on_key(self, event)
 
     def compose(self) -> ComposeResult:
         yield Table(headers=["key", "value"], rows=[(k, v) for k, v in asdict(self.metadata).items()])
@@ -154,12 +145,10 @@ class ToC(Window):
         self.entry_widgets = [FollowButton(entry.label, entry.value) for entry in self.entries]
 
     def on_mount(self) -> None:
-        _window_on_mount(self)
+        self.styles.border = ("double", self.styles.scrollbar_color)
 
     async def on_key(self, event: events.Key) -> None:
         callback = {
-            # NOTE: somehow cannot be bound to self.remove for closing
-            # it will freeze the app
             **{k: self.action_close for k in ["q", "escape", "tab"]},
             **{k: self.action_focus_next_child for k in ["j", "down"]},
             **{k: self.action_focus_prev_child for k in ["k", "up"]},
@@ -213,6 +202,3 @@ class ToC(Window):
 
     def compose(self) -> ComposeResult:
         yield from self.entry_widgets
-
-    def action_close(self) -> None:
-        self.remove()
