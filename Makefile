@@ -6,3 +6,9 @@ tests:
 format:
 	isort src
 	black src
+
+console:
+	textual console
+
+debug:
+	textual run --dev tools/debug.py:Debug
