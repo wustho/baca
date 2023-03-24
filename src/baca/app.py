@@ -1,11 +1,11 @@
-import os
 import asyncio
+import inspect
+import os
 import subprocess
 from datetime import datetime
-import inspect
 
-from rich.text import Text
 from rich.console import RenderableType
+from rich.text import Text
 from textual import events
 from textual.app import App, ComposeResult
 from textual.await_remove import AwaitRemove
@@ -17,7 +17,7 @@ from textual.widgets import LoadingIndicator
 
 from .components.contents import Content
 from .components.events import DoneLoading, FollowThis, OpenThisImage
-from .components.windows import Alert, ToC
+from .components.windows import Alert, ToC, Metadata
 from .ebooks import Ebook
 from .models import Layers
 
@@ -45,6 +45,7 @@ class Baca(App):
             **{k: self.action_quit for k in ["q", "escape"]},
             **{k: self.screen.action_scroll_down for k in ["j", "down"]},
             **{k: self.screen.action_scroll_up for k in ["k", "up"]},
+            "M": self.action_open_metadata,
             "c": self.action_toggle_dark,
             "tab": self.action_open_toc,
             "ctrl+f": self.screen.action_page_down,
@@ -83,8 +84,13 @@ class Baca(App):
         await self.mount(event.content)
         self.loader.remove()
         # TODO: temp workaround
-        self.screen.focus()
-        # self.call_after_refresh(self.query_one("#startup-loader").remove())
+        # self.screen.focus()
+
+    async def action_open_metadata(self) -> None:
+        if self.metadata is None:
+            metadata = Metadata(self.ebook.get_meta())
+            await self.mount(metadata)
+            metadata.focus(False)
 
     async def action_open_toc(self) -> None:
         if self.toc is None:
@@ -142,6 +148,13 @@ class Baca(App):
     def toc(self) -> ToC | None:
         try:
             return self.query_one(ToC.__name__, ToC)
+        except NoMatches:
+            return None
+
+    @property
+    def metadata(self) -> Metadata | None:
+        try:
+            return self.query_one(Metadata.__name__, Metadata)
         except NoMatches:
             return None
 

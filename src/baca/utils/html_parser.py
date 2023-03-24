@@ -1,5 +1,5 @@
-from urllib.parse import urljoin
 from typing import Iterator
+from urllib.parse import urljoin
 
 from bs4 import BeautifulSoup
 from markdownify import MarkdownConverter as _MarkdownConverter

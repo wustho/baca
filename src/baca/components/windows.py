@@ -1,3 +1,4 @@
+from dataclasses import asdict
 import inspect
 
 from rich.text import Text
@@ -6,15 +7,16 @@ from textual.actions import SkipAction
 from textual.app import ComposeResult
 from textual.message import Message
 from textual.widget import Widget
+from textual.widgets import DataTable, Static
 
-from ..models import Layers, TocEntry
+from ..models import Layers, TocEntry, BookMetadata
 from .events import FollowThis
 
 
 # NOTE: Widget seems weird when being inherited
 async def _window_on_key(obj: Widget, event: events.Key) -> None:
     callback = {
-        **{k: obj.remove for k in ["q", "escape"]},
+        **{k: obj.action_close for k in ["q", "escape"]},
         **{k: obj.action_scroll_down for k in ["j", "down"]},
         **{k: obj.action_scroll_up for k in ["k", "up"]},
         "ctrl+f": obj.action_page_down,
@@ -69,6 +71,42 @@ class Alert(Widget):
 
     def render(self):
         return Text(self.message, justify="center", style="bold")
+
+
+class Metadata(Widget):
+    border_title = "Metadata"
+    can_focus = True
+
+    def __init__(self, metadata: BookMetadata):
+        super().__init__()
+        self.metadata = metadata
+
+    def action_close(self) -> None:
+        self.remove()
+
+    def on_mount(self) -> None:
+        _window_on_mount(self)
+        # self.styles.padding = 5
+        self.styles.border_title_align = "center"
+        self.styles.align = ("center", "top")
+
+    async def on_key(self, event: events.Key) -> None:
+        await _window_on_key(self, event)
+
+    def compose(self) -> ComposeResult:
+        # for i in range(50):
+        #     yield Static(str(i))
+        table = DataTable()
+        # NOTE: height & width important so table will overflow Metadata
+        # instead of its ScrollView parent widget
+        table.styles.height = "auto"
+        table.styles.width = "auto"
+        table.can_focus = False
+        table.zebra_stripes = True
+        table.show_cursor = False
+        table.add_columns("key", "value")
+        table.add_rows([(k, v) for k, v in asdict(self.metadata).items()])
+        yield table
 
 
 class FollowButton(Widget):

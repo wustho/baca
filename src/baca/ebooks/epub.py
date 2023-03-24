@@ -1,13 +1,14 @@
+import dataclasses
 import os
+import shutil
+import tempfile
 import xml.etree.ElementTree as ET
 import zipfile
 import zlib
-import tempfile
-import shutil
 from typing import Iterator
 from urllib.parse import unquote, urljoin, urlparse
 
-from ..models import Segment, TocEntry
+from ..models import BookMetadata, Segment, TocEntry
 from ..utils.html_parser import parse_html_to_segmented_md
 from .base import Ebook
 
@@ -31,22 +32,15 @@ class Epub(Ebook):
     def get_tempdir(self) -> str:
         return self._tempdir
 
-    # def get_meta(self) -> BookMetadata:
-    #     assert isinstance(self._file, zipfile.ZipFile)
-    #     # why self.file.read(self.root_filepath) problematic
-    #     # content_opf = ET.fromstring(self.file.open(self.root_filepath).read())
-    #     content_opf = ET.parse(self._file.open(self.root_filepath))
-    #     return Epub._get_metadata(content_opf)
-
-    # @staticmethod
-    # def _get_metadata(content_opf: ET.ElementTree) -> BookMetadata:
-    #     metadata: dict[str, str | None] = {}
-    #     for field in dataclasses.fields(BookMetadata):
-    #         element = content_opf.find(f".//DC:{field.name}", Epub.NAMESPACE)
-    #         if element is not None:
-    #             metadata[field.name] = element.text
-
-    #     return BookMetadata(**metadata)
+    def get_meta(self) -> BookMetadata:
+        assert isinstance(self._file, zipfile.ZipFile)
+        content_opf = ET.parse(self._file.open(self._root_filepath))
+        metadata: dict[str, str | None] = {}
+        for field in dataclasses.fields(BookMetadata):
+            element = content_opf.find(f".//DC:{field.name}", Epub.NAMESPACE)
+            if element is not None:
+                metadata[field.name] = element.text
+        return BookMetadata(**metadata)
 
     @staticmethod
     def _parse_opf(content_opf: ET.ElementTree) -> tuple[str, ...]:

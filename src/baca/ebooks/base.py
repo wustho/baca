@@ -1,7 +1,7 @@
 import xml.etree.ElementTree as ET
 from typing import Iterator
 
-from ..models import Segment, TocEntry
+from ..models import BookMetadata, Segment, TocEntry
 
 
 class Ebook:
@@ -17,7 +17,6 @@ class Ebook:
     def get_raw_text(self, content: str | ET.Element) -> str:
         raise NotImplementedError()
 
-    # TODO: just return bytes
     def get_img_bytestr(self, image_id: str) -> tuple[str, bytes]:
         raise NotImplementedError()
 
@@ -31,5 +30,5 @@ class Ebook:
     def iter_parsed_contents(self) -> Iterator[Segment]:
         raise NotImplementedError()
 
-    # def get_meta(self) -> BookMetadata:
-    #     raise NotImplementedError("Ebook.get_meta() not implemented")
+    def get_meta(self) -> BookMetadata:
+        raise NotImplementedError("Ebook.get_meta() not implemented")
