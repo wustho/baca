@@ -1,11 +1,18 @@
+import os
+import sys
+
 from .app import Baca
 from .ebooks import Epub
+from .utils.cli import parse_cli_args
 
 
 def main():
-    file = "/home/ss/Projects/baca.draft/tmp/pg11-images.epub"
-    # file = "/home/ss/Projects/baca/tmp/andyweir.epub"
-    ebook = Epub(file)
+    args = parse_cli_args()
+    if len(args.ebook) and os.path.isfile(args.ebook[0]):
+        return sys.exit(Baca(args.ebook[0]).run())
+    # file = "/home/ss/Projects/baca.draft/tmp/pg11-images.epub"
+    # file = "/home/ss/Projects/baca.draft/tmp/andyweir.epub"
+    # ebook = Epub(file)
     # for s in ebook.iter_parsed_contents():
     #     print(s)
     #     print("==========")
@@ -16,7 +23,7 @@ def main():
     #         print(c)
     # list(ebook.iter_parsed_contents())[0]
     # print(ebook.get_toc())
-    Baca(ebook).run()
+    # Baca(ebook).run()
 
 
 if __name__ == "__main__":

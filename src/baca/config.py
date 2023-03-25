@@ -1,18 +1,12 @@
-import os
-import shutil
 from configparser import ConfigParser
+from pathlib import Path
 from typing import Literal, cast
 
-import appdirs
-from pkg_resources import resource_filename
-
-from . import __appname__ as appname
 from .models import Color, Config, Keymaps
+from .utils.user_appdirs import retrieve_user_config_file
 
-DEFAULT_CONFIG = resource_filename(__name__, "resources/config.ini")
 
-
-def load_config(config_path: str) -> Config:
+def load_config(config_path: Path) -> Config:
     parser = ConfigParser()
     parser.read(config_path)
 
@@ -58,12 +52,4 @@ def load_config(config_path: str) -> Config:
 
 
 def load_user_config() -> Config:
-    configdir = appdirs.user_config_dir(appname=appname)
-    if not os.path.isdir(configdir):
-        os.makedirs(configdir)
-
-    configfile = os.path.join(configdir, "config.ini")
-    if not os.path.isfile(configfile):
-        shutil.copyfile(DEFAULT_CONFIG, configfile)
-
-    return load_config(configfile)
+    return load_config(retrieve_user_config_file())

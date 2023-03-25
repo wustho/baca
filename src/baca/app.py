@@ -2,8 +2,8 @@ import os
 import subprocess
 from dataclasses import asdict
 from datetime import datetime
+from importlib import resources
 
-from pkg_resources import resource_filename
 from textual import events
 from textual.app import App, ComposeResult
 from textual.await_remove import AwaitRemove
@@ -16,26 +16,27 @@ from .components.contents import Content
 from .components.events import DoneLoading, FollowThis, OpenThisImage
 from .components.windows import Alert, DictDisplay, ToC
 from .config import load_user_config
-from .ebooks import Ebook
+from .ebooks import Ebook, Epub
 from .models import KeyMap
 from .utils.keys_parser import dispatch_key
 
 
 # TODO: reorganize methods order
 class Baca(App):
-    CSS_PATH = resource_filename(__name__, "resources/style.css")
+    CSS_PATH = str(resources.path("baca.resources", "style.css"))
 
-    def __init__(self, ebook: Ebook):
+    def __init__(self, ebook_path: str):
         self.config = load_user_config()  # load first to resolve colors
         super().__init__()
         # TODO: move initializing ebook to self.load_everything()
-        self.ebook = ebook
+        self.ebook_path = ebook_path
 
     def on_load(self, _: events.Load) -> None:
         assert self._loop is not None
         self._loop.run_in_executor(None, self.load_everything)
 
     def load_everything(self):
+        self.ebook = Epub(self.ebook_path)
         content = Content(self.config, self.ebook)
         # NOTE: using a message instead of calling
         # the callback directly to make sure that the app is ready

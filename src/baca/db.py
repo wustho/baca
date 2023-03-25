@@ -18,7 +18,8 @@ obj2.save()
 Read more: http://docs.peewee-orm.com/en/latest/peewee/models.html?highlight=force_insert#id4
 """
 
-from .models import db, Migration, DbMetadata, ReadingHistory
+from .exceptions import TableDoesNotExist
+from .models import DbMetadata, Migration, ReadingHistory, db
 
 
 def initial_migration(db) -> None:
@@ -28,10 +29,6 @@ def initial_migration(db) -> None:
 MIGRATIONS: list[Migration] = [
     Migration(version=0, migrate=initial_migration),
 ]
-
-
-class TableDoesNotExist(Exception):
-    pass
 
 
 def migrate() -> None:

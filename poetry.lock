@@ -527,6 +527,14 @@ optional = false
 python-versions = ">=3.7"
 
 [[package]]
+name = "peewee"
+version = "3.16.0"
+description = "a little orm"
+category = "main"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "pexpect"
 version = "4.8.0"
 description = "Pexpect allows easy control of interactive console applications."
@@ -815,7 +823,7 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "5cf0fe9e778c111785cf6702604f29f32c595409287f935aa4d49ba0acdb70e0"
+content-hash = "6ab49abcc62383ed7c9b20f36d35707c006dd4030c7685cde2057c0fa51977bf"
 
 [metadata.files]
 aiohttp = [
@@ -1437,6 +1445,9 @@ parso = [
 pathspec = [
     {file = "pathspec-0.10.2-py3-none-any.whl", hash = "sha256:88c2606f2c1e818b978540f73ecc908e13999c6c3a383daf3705652ae79807a5"},
     {file = "pathspec-0.10.2.tar.gz", hash = "sha256:8f6bf73e5758fd365ef5d58ce09ac7c27d2833a8d7da51712eac6e27e35141b0"},
+]
+peewee = [
+    {file = "peewee-3.16.0.tar.gz", hash = "sha256:1800c0a04962ee99d161c07f5a12fc49549caf5cfcda426a9103e34e37f854ba"},
 ]
 pexpect = [
     {file = "pexpect-4.8.0-py2.py3-none-any.whl", hash = "sha256:0b48a55dcb3c05f3329815901ea4fc1537514d6ba867a152b581d69ae3710937"},

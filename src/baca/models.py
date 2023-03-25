@@ -1,12 +1,13 @@
-from datetime import datetime
 from dataclasses import dataclass
+from datetime import datetime
 from enum import Enum
 from typing import Callable, Literal
 
-from peewee import SqliteDatabase, Model, DateTimeField, CharField, IntegerField, FloatField
+from peewee import CharField, DateTimeField, FloatField, IntegerField, Model, SqliteDatabase
 
+from .utils.user_appdirs import retrieve_user_cache_dbfile
 
-db = SqliteDatabase("tmp/baca.db")
+db = SqliteDatabase(retrieve_user_cache_dbfile())
 
 
 class BaseModel(Model):

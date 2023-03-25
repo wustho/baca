@@ -39,8 +39,22 @@ SegmentWidget {
   height: auto;
 }
 
-Image {
-  border: solid white;
+.-dark-mode Image {
+  border: solid $dark-fg;
+}
+
+.-light-mode Image {
+  border: solid $light-fg;
+}
+
+.-dark-mode Image:hover {
+  border: double $dark-accent;
+  color: $dark-accent;
+}
+
+.-light-mode Image:hover {
+  border: double $light-accent;
+  color: $light-accent;
 }
 
 Section {
