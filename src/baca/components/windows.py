@@ -7,7 +7,7 @@ from textual.app import ComposeResult
 from textual.widget import Widget
 from textual.widgets import Static
 
-from ..config import Keymaps, config
+from ..config import Config
 from ..models import BookMetadata, KeyMap, Layers, TocEntry
 from ..utils.keys_parser import dispatch_key
 from .contents import Table
@@ -15,8 +15,12 @@ from .events import FollowThis
 
 
 class Window(Widget):
-    def __init__(self, keymaps: Keymaps = config.keymaps):
+    can_focus = True
+
+    def __init__(self, config: Config):
         super().__init__()
+        self.config = config
+        keymaps = self.config.keymaps
         self.keymaps = [
             KeyMap(keymaps.close, self.action_close),
             KeyMap(keymaps.scroll_down, self.action_scroll_down),
@@ -46,10 +50,9 @@ class Window(Widget):
 
 class Alert(Window):
     border_title = "❗"
-    can_focus = True
 
-    def __init__(self, message: str):
-        super().__init__()
+    def __init__(self, config: Config, message: str):
+        super().__init__(config)
         self.message = message
 
     def on_mount(self) -> None:
@@ -69,10 +72,9 @@ class Alert(Window):
 
 class Metadata(Window):
     border_title = "Metadata"
-    can_focus = True
 
-    def __init__(self, metadata: BookMetadata, keymaps: Keymaps = config.keymaps):
-        super().__init__(keymaps=keymaps)
+    def __init__(self, config: Config, metadata: BookMetadata):
+        super().__init__(config)
         self.metadata = metadata
 
     def on_mount(self) -> None:
@@ -129,10 +131,8 @@ class FollowButton(Widget):
 class ToC(Window):
     border_title = "Table of Contents"
 
-    def __init__(
-        self, entries: list[TocEntry], initial_focused_id: str | None = None, keymaps: Keymaps = config.keymaps
-    ):
-        super().__init__(keymaps=keymaps)
+    def __init__(self, config: Config, entries: list[TocEntry], initial_focused_id: str | None = None):
+        super().__init__(config)
         self.entries = entries
         self.initial_focused_id = initial_focused_id
         self.entry_widgets = [FollowButton(entry.label, entry.value) for entry in self.entries]

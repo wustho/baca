@@ -6,8 +6,8 @@ from textual.widget import Widget
 from textual.widgets import DataTable, LoadingIndicator, Static
 from textual.widgets.markdown import Markdown as PrettyMarkdown
 
-from ..config import config
 from ..ebooks import Ebook
+from ..config import Config
 from ..models import Layers, SegmentType
 from .events import OpenThisImage
 
@@ -32,10 +32,14 @@ class Table(DataTable):
 class SegmentWidget(Widget):
     can_focus = False
 
+    def __init__(self, config: Config, id: str | None = None):
+        super().__init__(id=id)
+        self.config = config
+
 
 class Body(SegmentWidget):
-    def __init__(self, src: str):
-        super().__init__()
+    def __init__(self, config: Config, src: str):
+        super().__init__(config)
         self._src = src
 
     def on_mount(self) -> None:
@@ -43,12 +47,13 @@ class Body(SegmentWidget):
 
     def render(self):
         # return Text(" ".join([str(i) for i in range(1000)]), style="italic")
-        return Markdown(self._src, justify=config.text_justification)
+        return Markdown(self._src, justify=self.config.text_justification)
 
 
 class Image(SegmentWidget):
-    def __init__(self, src: str):
-        super().__init__()
+    def __init__(self, config: Config, src: str):
+        super().__init__(config)
+        # TODO: maybe put it in Widget.id?
         self._src = src
 
     def on_mount(self) -> None:
@@ -67,13 +72,13 @@ class Image(SegmentWidget):
 
 
 class PrettyBody(PrettyMarkdown, SegmentWidget):
-    pass
+    def __init__(self, *args, **kwargs):
+        super().__init__()
 
 
 class Section(SegmentWidget):
-    def __init__(self, value: str):
-        super().__init__(id=value)
-        # self.section_id = value
+    def __init__(self, config: Config, value: str):
+        super().__init__(config=config, id=value)
 
     def render(self):
         return self.id
@@ -91,8 +96,9 @@ class Section(SegmentWidget):
 class Content(Widget):
     can_focus = False
 
-    def __init__(self, ebook: Ebook):
+    def __init__(self, config: Config, ebook: Ebook):
         super().__init__()
+        self.config = config
 
         self._segment_widgets: list[SegmentWidget] = []
         for segment in ebook.iter_parsed_contents():
@@ -102,7 +108,7 @@ class Content(Widget):
                 component_cls = Body if not config.pretty else PrettyBody
             else:
                 component_cls = Image
-            self._segment_widgets.append(component_cls(segment.content))
+            self._segment_widgets.append(component_cls(self.config, segment.content))
 
     @property
     def sections(self) -> list[Section]:
@@ -119,7 +125,7 @@ class Content(Widget):
         self.styles.layout = "vertical"
         self.styles.height = "auto"
         self.styles.layer = Layers.CONTENT.value
-        self.styles.max_width = config.max_text_width
+        self.styles.max_width = self.config.max_text_width
         self.styles.margin = (0, 2)
 
     def on_mouse_scroll_down(self, _: events.MouseScrollDown) -> None:

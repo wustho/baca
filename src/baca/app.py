@@ -18,9 +18,10 @@ from textual.widgets import LoadingIndicator
 from .components.contents import Content
 from .components.events import DoneLoading, FollowThis, OpenThisImage
 from .components.windows import Alert, Metadata, ToC
-from .config import config
+from .config import load_config
 from .ebooks import Ebook
-from .models import Layers
+from .models import Layers, KeyMap
+from .utils.keys_parser import dispatch_key
 
 
 # TODO: reorganize methods order
@@ -30,61 +31,13 @@ class Baca(App):
         # TODO: move initializing ebook to self.load_everything()
         self.ebook = ebook
 
-    def debug(self) -> None:
-        self.log(None)
-
-    async def debug_async(self) -> None:
-        self.log(None)
-
-    async def alert(self, message: str) -> None:
-        alert = Alert(message)
-        await self.mount(alert)
-        alert.focus(False)
-
-    async def on_key(self, event: events.Key) -> None:
-        callback = {
-            **{k: self.action_quit for k in config.keymaps.close},
-            **{k: self.screen.action_scroll_down for k in config.keymaps.scroll_down},
-            **{k: self.screen.action_scroll_up for k in config.keymaps.scroll_up},
-            **{k: self.screen.action_page_down for k in config.keymaps.page_down},
-            **{k: self.screen.action_page_up for k in config.keymaps.page_up},
-            **{k: self.action_open_toc for k in config.keymaps.open_toc},
-            **{k: self.action_open_metadata for k in config.keymaps.open_metadata},
-            **{k: self.action_toggle_dark for k in config.keymaps.toggle_dark},
-            **{
-                k: lambda: self.save_screenshot(f"baca_{datetime.now().isoformat()}.svg")
-                for k in config.keymaps.screenshot
-            },
-            # "D": self.debug,
-            # "D": self.debug_async,
-        }.get(event.key)
-
-        if callback is not None:
-            return_value = callback()
-            if inspect.isawaitable(return_value):
-                await return_value
-
-    def on_mount(self) -> None:
-        # self.styles.background = "transparent"
-        # self.screen.styles.background = "transparent"
-        self.screen.styles.align = ("center", "middle")
-        self.screen.styles.scrollbar_size_vertical = 1
-        self.screen.styles.layers = (layer.value for layer in Layers)
-        self.screen.can_focus = True
-
-    # TODO: move this to self.screen
-    # async def on_click(self):
-    #     self.query("Window").remove()
-
-    def compose(self) -> ComposeResult:
-        yield LoadingIndicator(id="startup-loader")
-
     def on_load(self, _: events.Load) -> None:
         assert self._loop is not None
         self._loop.run_in_executor(None, self.load_everything)
 
     def load_everything(self):
-        content = Content(self.ebook)
+        self.config = load_config()
+        content = Content(self.config, self.ebook)
         # NOTE: using a message instead of calling
         # the callback directly to make sure that the app is ready
         # before calling the callback, since this message will
@@ -102,9 +55,45 @@ class Baca(App):
         await self.mount(event.content)
         self.get_widget_by_id("startup-loader", LoadingIndicator).remove()
 
+    async def alert(self, message: str) -> None:
+        alert = Alert(self.config, message)
+        await self.mount(alert)
+        alert.focus(False)
+
+    async def on_key(self, event: events.Key) -> None:
+        cfgkeymaps = self.config.keymaps
+        keymaps = [
+            KeyMap(cfgkeymaps.close, self.action_quit),
+            KeyMap(cfgkeymaps.scroll_down, self.screen.action_scroll_down),
+            KeyMap(cfgkeymaps.scroll_up, self.screen.action_scroll_up),
+            KeyMap(cfgkeymaps.page_up, self.screen.action_page_up),
+            KeyMap(cfgkeymaps.page_down, self.screen.action_page_down),
+            KeyMap(cfgkeymaps.open_toc, self.action_open_toc),
+            KeyMap(cfgkeymaps.open_metadata, self.action_open_metadata),
+            KeyMap(cfgkeymaps.toggle_dark, self.action_toggle_dark),
+            KeyMap(cfgkeymaps.screenshot, lambda: self.save_screenshot(f"baca_{datetime.now().isoformat()}.svg")),
+            KeyMap(["D"], self.debug),
+        ]
+        await dispatch_key(keymaps, event)
+
+    def on_mount(self) -> None:
+        # self.styles.background = "transparent"
+        # self.screen.styles.background = "transparent"
+        self.screen.styles.align = ("center", "middle")
+        self.screen.styles.scrollbar_size_vertical = 1
+        self.screen.styles.layers = (layer.value for layer in Layers)
+        self.screen.can_focus = True
+
+    # TODO: move this to self.screen
+    # async def on_click(self):
+    #     self.query("Window").remove()
+
+    def compose(self) -> ComposeResult:
+        yield LoadingIndicator(id="startup-loader")
+
     async def action_open_metadata(self) -> None:
         if self.metadata is None:
-            metadata = Metadata(self.ebook.get_meta())
+            metadata = Metadata(self.config, self.ebook.get_meta())
             await self.mount(metadata)
             metadata.focus(False)
 
@@ -122,7 +111,7 @@ class Baca(App):
                 # else:
                 #     break
 
-            toc = ToC(entries=toc_entries, initial_focused_id=initial_focused_id)
+            toc = ToC(self.config, entries=toc_entries, initial_focused_id=initial_focused_id)
             # NOTE: awaiting is necessary to prevent broken layout
             await self.mount(toc)
             toc.focus(False)
@@ -172,3 +161,6 @@ class Baca(App):
     @property
     def content(self) -> Content:
         return self.query_one(Content.__name__, Content)
+
+    def debug(self) -> None:
+        self.log("-----------", self.focused)

@@ -66,7 +66,7 @@ class Config:
     keymaps: Keymaps
 
 
-def load_config_str(config_str: str = DEFAULT) -> Config:
+def load_config(config_str: str = DEFAULT) -> Config:
     parser = ConfigParser()
     parser.read_string(config_str)
 
@@ -100,5 +100,3 @@ def load_config_str(config_str: str = DEFAULT) -> Config:
         ),
     )
 
-
-config = load_config_str()
