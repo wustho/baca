@@ -1,20 +1,22 @@
 /* global */
 .-dark-mode {
-  background: $surface;
+  background: $dark-bg;
+  color: $dark-fg;
 }
 
 .-light-mode {
-  background: $surface;
+  background: $light-bg;
+  color: $light-fg;
 }
 
 .-dark-mode * {
-  scrollbar-color: $primary;
-  scrollbar-background: $surface;
+  scrollbar-color: $dark-accent;
+  scrollbar-background: $dark-bg;
 }
 
 .-light-mode * {
-  scrollbar-color: $primary;
-  scrollbar-background: $surface;
+  scrollbar-color: $light-accent;
+  scrollbar-background: $light-bg;
 }
 
 Screen {
@@ -38,7 +40,7 @@ SegmentWidget {
 }
 
 Image {
-  border: solid $primary;
+  border: solid white;
 }
 
 Section {
@@ -52,14 +54,14 @@ Section {
 }
 
 Content * {
-  text-align: justify;
+  text-align: $text-justification;
 }
 
 Content {
   layout: vertical;
   height: auto;
   layer: content;
-  max-width: 80;
+  max-width: $text-max-width;
   margin: 0 2;
 }
 
@@ -77,14 +79,21 @@ Window {
   border-title-align: center;
 }
 
+.-dark-mode Window {
+  border: double $dark-accent;
+}
+
+.-light-mode Window {
+  border: double $light-accent;
+}
+
 Metadata {
-  border: double $primary;
   align: center top;
 }
 
-ToC {
-  border: double $primary;
-}
+/* ToC { */
+/*   border: double $dark-accent; */
+/* } */
 
 Alert {
   border: solid red;
@@ -100,5 +109,9 @@ FollowButton {
 }
 
 .-dark-mode FollowButton:focus {
-  background: $primary;
+  background: $dark-accent;
+}
+
+.-light-mode FollowButton:focus {
+  background: $light-accent;
 }

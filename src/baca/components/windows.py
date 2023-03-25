@@ -5,8 +5,7 @@ from textual.app import ComposeResult
 from textual.widget import Widget
 from textual.widgets import Static
 
-from ..config import Config
-from ..models import BookMetadata, KeyMap, TocEntry
+from ..models import BookMetadata, Config, KeyMap, TocEntry
 from ..utils.keys_parser import dispatch_key
 from .contents import Table
 from .events import FollowThis

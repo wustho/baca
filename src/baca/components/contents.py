@@ -6,9 +6,8 @@ from textual.widget import Widget
 from textual.widgets import DataTable
 from textual.widgets.markdown import Markdown as PrettyMarkdown
 
-from ..config import Config
 from ..ebooks import Ebook
-from ..models import SegmentType
+from ..models import Config, SegmentType
 from .events import OpenThisImage
 
 
@@ -39,8 +38,11 @@ class Body(SegmentWidget):
         self._src = src
 
     def render(self):
-        # return Text(" ".join([str(i) for i in range(1000)]), style="italic")
-        return Markdown(self._src, justify=self.config.text_justification)
+        # NOTE: Markdwon rich isn't widget, so we cannot set using css
+        # hence this translation workaround
+        return Markdown(
+            self._src, justify=dict(center="center", left="left", right="right", justify="full")[self.styles.text_align]  # type: ignore
+        )
 
 
 class Image(SegmentWidget):

@@ -2,6 +2,7 @@ import os
 import subprocess
 from datetime import datetime
 
+from pkg_resources import resource_filename
 from textual import events
 from textual.app import App, ComposeResult
 from textual.await_remove import AwaitRemove
@@ -21,13 +22,7 @@ from .utils.keys_parser import dispatch_key
 
 # TODO: reorganize methods order
 class Baca(App):
-    CSS_PATH = "baca.css"
-
-    # TODO:
-    def get_css_variables(self):
-        original = super().get_css_variables()
-        # original.update(coba=self.config.light.accent)
-        return original
+    CSS_PATH = resource_filename(__name__, "resources/style.css")
 
     def __init__(self, ebook: Ebook):
         self.config = load_config()  # load first to resolve colors
@@ -58,6 +53,22 @@ class Baca(App):
         await self.mount(event.content)
         self.get_widget_by_id("startup-loader", LoadingIndicator).remove()
 
+    def get_css_variables(self):
+        original = super().get_css_variables()
+        return {
+            **original,
+            **{
+                "text-max-width": self.config.max_text_width,
+                "text-justification": self.config.text_justification,
+                "dark-bg": self.config.dark.bg,
+                "dark-fg": self.config.dark.fg,
+                "dark-accent": self.config.dark.accent,
+                "light-bg": self.config.light.bg,
+                "light-fg": self.config.light.fg,
+                "light-accent": self.config.light.accent,
+            },
+        }
+
     async def alert(self, message: str) -> None:
         alert = Alert(self.config, message)
         await self.mount(alert)
@@ -78,18 +89,13 @@ class Baca(App):
                 KeyMap(keymaps.toggle_dark, self.action_toggle_dark),
                 KeyMap(keymaps.screenshot, lambda: self.save_screenshot(f"baca_{datetime.now().isoformat()}.svg")),
                 # KeyMap(["D"], self.debug),
-                KeyMap(["D"], self.debug_async),
+                # KeyMap(["D"], self.debug_async),
             ],
             event,
         )
 
     # def on_mount(self) -> None:
-        # self.styles.background =None
-        # self.screen.styles.background = "transparent"
-        # self.screen.styles.align = ("center", "middle")
-        # self.screen.styles.scrollbar_size_vertical = 1
-        # self.screen.styles.layers = (layer.value for layer in Layers)
-        # self.screen.can_focus = True
+    #     self.screen.can_focus = True
 
     # TODO: move this to self.screen
     # async def on_click(self):
@@ -113,9 +119,8 @@ class Baca(App):
             for s in self.content.sections:
                 if self.screen.scroll_y >= s.virtual_region.y:
                     initial_focused_id = s.id
-                # TODO: check why breaking here not working
-                # else:
-                #     break
+                else:
+                    break
 
             toc = ToC(self.config, entries=toc_entries, initial_focused_id=initial_focused_id)
             # NOTE: awaiting is necessary to prevent broken layout

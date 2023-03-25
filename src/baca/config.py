@@ -1,81 +1,19 @@
+from pkg_resources import resource_filename
 from configparser import ConfigParser
-from dataclasses import dataclass
 from typing import Literal, cast
 
-DEFAULT = """\
-[General]
-MaxTextWidth = 80
-# 'full', 'center', 'left', 'right'
-TextJustification = full
-# Currently using pretty is slow
-# and text alignment only works for 'left' aligned
-Pretty = no
-
-[Color Dark]
-Background = #000000
-Foreground = #ffffff
-Accent = #00ff00
-
-[Color Light]
-Background = #ffffff
-Foreground = #000000
-Accent = #00ff00
-
-[Keymaps]
-ToggleLightDark = c
-ScrollDown = down,j
-ScrollUp = up,k
-PageDown = ctrl+f,pagedown
-PageUp = ctrl+b,pageup
-Home = home,g
-End = end,G
-OpenToc = tab
-OpenMetadata = M
-OpenHelp = question_mark
-CloseOrQuit = q,escape
-Screenshot = f12
-"""
+from .models import Config, Color, Keymaps
 
 
-@dataclass
-class Color:
-    bg: str
-    fg: str
-    accent: str
+DEFAULT_CONFIG = resource_filename(__name__, "resources/config.ini")
 
 
-@dataclass
-class Keymaps:
-    toggle_dark: list[str]
-    scroll_down: list[str]
-    scroll_up: list[str]
-    home: list[str]
-    end: list[str]
-    page_up: list[str]
-    page_down: list[str]
-    open_toc: list[str]
-    open_metadata: list[str]
-    open_help: list[str]
-    close: list[str]
-    screenshot: list[str]
-
-
-@dataclass
-class Config:
-    max_text_width: int
-    text_justification: Literal["default", "center", "full", "right", "left"]
-    pretty: bool
-    dark: Color
-    light: Color
-    keymaps: Keymaps
-
-
-def load_config(config_str: str = DEFAULT) -> Config:
+def load_config(config_path: str = DEFAULT_CONFIG) -> Config:
     parser = ConfigParser()
-    parser.read_string(config_str)
+    parser.read(config_path)
 
     return Config(
-        max_text_width=int(parser["General"]["MaxTextWidth"]),
+        max_text_width=parser["General"]["MaxTextWidth"],
         text_justification=cast(
             Literal["default", "center", "full", "right", "left"], parser["General"]["TextJustification"]
         ),
