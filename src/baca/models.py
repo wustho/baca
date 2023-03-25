@@ -28,11 +28,6 @@ class SegmentType(Enum):
     BODY = "body"
 
 
-class Layers(Enum):
-    CONTENT = "content"
-    WINDOWS = "windows"
-
-
 @dataclass(frozen=True)
 class Segment:
     type: SegmentType

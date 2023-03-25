@@ -1,0 +1,104 @@
+/* global */
+.-dark-mode {
+  background: $surface;
+}
+
+.-light-mode {
+  background: $surface;
+}
+
+.-dark-mode * {
+  scrollbar-color: $primary;
+  scrollbar-background: $surface;
+}
+
+.-light-mode * {
+  scrollbar-color: $primary;
+  scrollbar-background: $surface;
+}
+
+Screen {
+  align: center middle;
+  height: auto;
+  scrollbar-size: 1 1;
+  layers: content windows;
+}
+
+/* contents */
+
+Table {
+  /* NOTE: height & width important so table will overflow Metadata */
+  /* instead of its ScrollView parent widget */
+  height: auto;
+  width: auto;
+}
+
+SegmentWidget {
+  height: auto;
+}
+
+Image {
+  border: solid $primary;
+}
+
+Section {
+  /* background: red; */
+  /* NOTE: cannot use 'visibility=hidden' and 'display=none' */
+  /* so use either height=0 or "opacity=0%" instead */
+  height: 0;
+  /* opacity: 0%; */
+  /* visibility: hidden; */
+  /* display: none; */
+}
+
+Content * {
+  text-align: justify;
+}
+
+Content {
+  layout: vertical;
+  height: auto;
+  layer: content;
+  max-width: 80;
+  margin: 0 2;
+}
+
+/* windows */
+
+Window {
+  dock: top;
+  layer: windows;
+  /* width: 90%; */
+  /* height: 90%; */
+  margin: 3 10;
+  padding: 1 4;
+  scrollbar-size: 1 1;
+  overflow-y: auto;
+  border-title-align: center;
+}
+
+Metadata {
+  border: double $primary;
+  align: center top;
+}
+
+ToC {
+  border: double $primary;
+}
+
+Alert {
+  border: solid red;
+  color: red;
+  scrollbar-color: red;
+}
+
+FollowButton {
+  height: auto;
+  border: tall grey;
+  margin: 0 1 1 0;
+  padding: 0 5;
+}
+
+.-dark-mode FollowButton:focus {
+  background: $primary;
+}

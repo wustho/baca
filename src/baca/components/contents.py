@@ -3,12 +3,12 @@ from rich.text import Text
 from textual import events
 from textual.app import ComposeResult
 from textual.widget import Widget
-from textual.widgets import DataTable, LoadingIndicator, Static
+from textual.widgets import DataTable
 from textual.widgets.markdown import Markdown as PrettyMarkdown
 
 from ..config import Config
 from ..ebooks import Ebook
-from ..models import Layers, SegmentType
+from ..models import SegmentType
 from .events import OpenThisImage
 
 
@@ -21,10 +21,6 @@ class Table(DataTable):
         self.add_rows(rows)
 
     def on_mount(self) -> None:
-        # NOTE: height & width important so table will overflow Metadata
-        # instead of its ScrollView parent widget
-        self.styles.height = "auto"
-        self.styles.width = "auto"
         self.zebra_stripes = True
         self.show_cursor = False
 
@@ -42,9 +38,6 @@ class Body(SegmentWidget):
         super().__init__(config)
         self._src = src
 
-    def on_mount(self) -> None:
-        self.styles.height = "auto"
-
     def render(self):
         # return Text(" ".join([str(i) for i in range(1000)]), style="italic")
         return Markdown(self._src, justify=self.config.text_justification)
@@ -55,10 +48,6 @@ class Image(SegmentWidget):
         super().__init__(config)
         # TODO: maybe put it in Widget.id?
         self._src = src
-
-    def on_mount(self) -> None:
-        self.styles.height = "auto"
-        self.styles.border = ("solid", "white")
 
     def render(self):
         return Text("🖼️  IMAGE", justify="center")
@@ -71,9 +60,9 @@ class Image(SegmentWidget):
         self.post_message(OpenThisImage(self._src))
 
 
-class PrettyBody(PrettyMarkdown, SegmentWidget):
-    def __init__(self, *args, **kwargs):
-        super().__init__()
+class PrettyBody(PrettyMarkdown):
+    def __init__(self, config: Config, value: str):
+        super().__init__(value)
 
 
 class Section(SegmentWidget):
@@ -83,15 +72,6 @@ class Section(SegmentWidget):
     def render(self):
         return self.id
 
-    def on_mount(self) -> None:
-        self.styles.background = "red"
-        self.styles.height = 1
-        # NOTE: cannot use 'visibility=hidden' and 'display=none'
-        # so use "opacity=0%" instead
-        self.styles.opacity = "0%"
-        # self.styles.visibility = "hidden"
-        # self.styles.display = "none"
-
 
 class Content(Widget):
     can_focus = False
@@ -100,7 +80,7 @@ class Content(Widget):
         super().__init__()
         self.config = config
 
-        self._segment_widgets: list[SegmentWidget] = []
+        self._segment_widgets: list[SegmentWidget | PrettyMarkdown] = []
         for segment in ebook.iter_parsed_contents():
             if segment.type == SegmentType.SECTION:
                 component_cls = Section
@@ -120,13 +100,6 @@ class Content(Widget):
             if s.id == id:
                 s.scroll_visible(top=True)
                 break
-
-    def on_mount(self) -> None:
-        self.styles.layout = "vertical"
-        self.styles.height = "auto"
-        self.styles.layer = Layers.CONTENT.value
-        self.styles.max_width = self.config.max_text_width
-        self.styles.margin = (0, 2)
 
     def on_mouse_scroll_down(self, _: events.MouseScrollDown) -> None:
         self.screen.scroll_down()

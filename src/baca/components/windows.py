@@ -1,14 +1,12 @@
-import inspect
 from dataclasses import asdict
 
 from textual import events
-from textual.actions import SkipAction
 from textual.app import ComposeResult
 from textual.widget import Widget
 from textual.widgets import Static
 
 from ..config import Config
-from ..models import BookMetadata, KeyMap, Layers, TocEntry
+from ..models import BookMetadata, KeyMap, TocEntry
 from ..utils.keys_parser import dispatch_key
 from .contents import Table
 from .events import FollowThis
@@ -36,16 +34,6 @@ class Window(Widget):
         # NOTE: somehow this method is automatically inherited
         # even if the child class overriding this without super().on_moun()
         self.focus(False)
-        # Somehow cannot set border on base class,
-        # this will overriding border set on inherited class
-        # self.styles.border = ("double", self.styles.scrollbar_color)
-        self.styles.dock = "top"
-        self.styles.layer = Layers.WINDOWS.value
-        self.styles.margin = (int(0.1 * self.screen.size.height), int(0.1 * self.screen.size.width))
-        self.styles.padding = (1, 4)
-        self.styles.scrollbar_size_vertical = 1
-        self.styles.overflow_y = "auto"
-        self.styles.border_title_align = "center"
 
     def action_close(self) -> None:
         self.remove()
@@ -57,12 +45,6 @@ class Alert(Window):
     def __init__(self, config: Config, message: str):
         super().__init__(config)
         self.message = message
-
-    def on_mount(self) -> None:
-        self.styles.border = ("solid", "darkred")
-        self.styles.color = "darkred"
-        self.styles.border_title_align = "center"
-        self.styles.scrollbar_color = "darkred"
 
     def compose(self) -> ComposeResult:
         yield Static(self.message)
@@ -80,21 +62,11 @@ class Metadata(Window):
         super().__init__(config)
         self.metadata = metadata
 
-    def on_mount(self) -> None:
-        self.styles.border = ("double", self.styles.scrollbar_color)
-        self.styles.border_title_align = "center"
-        self.styles.align = ("center", "top")
-
     def compose(self) -> ComposeResult:
         yield Table(headers=["key", "value"], rows=[(k, v) for k, v in asdict(self.metadata).items()])
 
 
 class FollowButton(Widget):
-    # DEFAULT_CSS = """
-    # FollowButton:focus {
-    #     background: $primary;
-    # }
-    # """
     can_focus = True
 
     def __init__(self, config: Config, label: str, value: str):
@@ -111,18 +83,6 @@ class FollowButton(Widget):
 
     def action_follow_this(self) -> None:
         self.post_message(FollowThis(self.value))
-
-    def on_mount(self) -> None:
-        self.styles.height = "auto"
-        self.styles.border = ("tall", "grey")
-        self.styles.margin = (0, 1, 1, 0)
-        self.styles.padding = (0, 5)
-
-    def on_focus(self) -> None:
-        self.styles.background = self.config.dark.accent
-
-    def on_blur(self) -> None:
-        self.styles.background = None
 
     def render(self):
         return self.label
@@ -148,9 +108,6 @@ class ToC(Window):
             KeyMap(config.keymaps.home, lambda: self.entry_widgets[0].focus()),
             KeyMap(config.keymaps.end, lambda: self.entry_widgets[-1].focus()),
         ]
-
-    def on_mount(self) -> None:
-        self.styles.border = ("double", self.styles.scrollbar_color)
 
     def on_focus(self) -> None:
         # always make the focus to the entries

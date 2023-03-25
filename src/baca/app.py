@@ -15,13 +15,22 @@ from .components.events import DoneLoading, FollowThis, OpenThisImage
 from .components.windows import Alert, Metadata, ToC
 from .config import load_config
 from .ebooks import Ebook
-from .models import KeyMap, Layers
+from .models import KeyMap
 from .utils.keys_parser import dispatch_key
 
 
 # TODO: reorganize methods order
 class Baca(App):
+    CSS_PATH = "baca.css"
+
+    # TODO:
+    def get_css_variables(self):
+        original = super().get_css_variables()
+        # original.update(coba=self.config.light.accent)
+        return original
+
     def __init__(self, ebook: Ebook):
+        self.config = load_config()  # load first to resolve colors
         super().__init__()
         # TODO: move initializing ebook to self.load_everything()
         self.ebook = ebook
@@ -31,7 +40,6 @@ class Baca(App):
         self._loop.run_in_executor(None, self.load_everything)
 
     def load_everything(self):
-        self.config = load_config()
         content = Content(self.config, self.ebook)
         # NOTE: using a message instead of calling
         # the callback directly to make sure that the app is ready
@@ -70,17 +78,18 @@ class Baca(App):
                 KeyMap(keymaps.toggle_dark, self.action_toggle_dark),
                 KeyMap(keymaps.screenshot, lambda: self.save_screenshot(f"baca_{datetime.now().isoformat()}.svg")),
                 # KeyMap(["D"], self.debug),
+                KeyMap(["D"], self.debug_async),
             ],
             event,
         )
 
-    def on_mount(self) -> None:
+    # def on_mount(self) -> None:
         # self.styles.background =None
         # self.screen.styles.background = "transparent"
-        self.screen.styles.align = ("center", "middle")
-        self.screen.styles.scrollbar_size_vertical = 1
-        self.screen.styles.layers = (layer.value for layer in Layers)
-        self.screen.can_focus = True
+        # self.screen.styles.align = ("center", "middle")
+        # self.screen.styles.scrollbar_size_vertical = 1
+        # self.screen.styles.layers = (layer.value for layer in Layers)
+        # self.screen.can_focus = True
 
     # TODO: move this to self.screen
     # async def on_click(self):
@@ -160,3 +169,6 @@ class Baca(App):
 
     def debug(self) -> None:
         self.log(None)
+
+    async def debug_async(self) -> None:
+        await self.alert("")
