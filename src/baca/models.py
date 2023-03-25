@@ -1,6 +1,42 @@
+from datetime import datetime
 from dataclasses import dataclass
 from enum import Enum
 from typing import Callable, Literal
+
+from peewee import SqliteDatabase, Model, DateTimeField, CharField, IntegerField, FloatField
+
+
+db = SqliteDatabase("tmp/baca.db")
+
+
+class BaseModel(Model):
+    class Meta:
+        database = db
+
+
+class DbMetadata(BaseModel):
+    version = IntegerField(primary_key=True)
+    migrated_at = DateTimeField(default=datetime.now)
+
+    class Meta:
+        table_name = "metadata"
+
+
+class ReadingHistory(BaseModel):
+    filepath = CharField(primary_key=True)
+    title = CharField(null=True)
+    author = CharField(null=True)
+    reading_progress = FloatField(null=False)
+    last_read = DateTimeField(default=datetime.now, null=False)
+
+    class Meta:
+        table_name = "reading_history"
+
+
+@dataclass(frozen=True)
+class Migration:
+    version: int
+    migrate: Callable[[SqliteDatabase], None]
 
 
 class SegmentType(Enum):
