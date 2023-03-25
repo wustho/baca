@@ -34,6 +34,11 @@ class Window(Widget):
         # even if the child class overriding this without super().on_moun()
         self.focus(False)
 
+        # NOTE: set here instead of in CSS file
+        # so it will be responsive to screen size
+        screen_size = self.screen.size
+        self.styles.margin = (screen_size.height // 10, screen_size.width // 10)
+
     def action_close(self) -> None:
         self.remove()
 

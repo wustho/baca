@@ -70,13 +70,13 @@ Content {
 Window {
   dock: top;
   layer: windows;
-  /* width: 90%; */
-  /* height: 90%; */
-  margin: 3 10;
   padding: 1 4;
   scrollbar-size: 1 1;
   overflow-y: auto;
   border-title-align: center;
+  /* NOTE: set this in Window.on_mount() */
+  /* so it will be responsive to screen size */
+  /* margin: 3 10; */
 }
 
 .-dark-mode Window {
