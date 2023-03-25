@@ -99,4 +99,3 @@ def load_config(config_str: str = DEFAULT) -> Config:
             screenshot=parser["Keymaps"]["Screenshot"].split(","),
         ),
     )
-

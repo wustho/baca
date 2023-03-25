@@ -1,15 +1,10 @@
-import asyncio
-import inspect
 import os
 import subprocess
 from datetime import datetime
 
-from rich.console import RenderableType
-from rich.text import Text
 from textual import events
 from textual.app import App, ComposeResult
 from textual.await_remove import AwaitRemove
-from textual.color import Color
 from textual.css.query import NoMatches
 from textual.dom import DOMNode
 from textual.widget import Widget
@@ -20,7 +15,7 @@ from .components.events import DoneLoading, FollowThis, OpenThisImage
 from .components.windows import Alert, Metadata, ToC
 from .config import load_config
 from .ebooks import Ebook
-from .models import Layers, KeyMap
+from .models import KeyMap, Layers
 from .utils.keys_parser import dispatch_key
 
 
@@ -58,7 +53,6 @@ class Baca(App):
     async def alert(self, message: str) -> None:
         alert = Alert(self.config, message)
         await self.mount(alert)
-        alert.focus(False)
 
     async def on_key(self, event: events.Key) -> None:
         cfgkeymaps = self.config.keymaps
@@ -77,7 +71,7 @@ class Baca(App):
         await dispatch_key(keymaps, event)
 
     def on_mount(self) -> None:
-        # self.styles.background = "transparent"
+        # self.styles.background =None
         # self.screen.styles.background = "transparent"
         self.screen.styles.align = ("center", "middle")
         self.screen.styles.scrollbar_size_vertical = 1
@@ -95,7 +89,6 @@ class Baca(App):
         if self.metadata is None:
             metadata = Metadata(self.config, self.ebook.get_meta())
             await self.mount(metadata)
-            metadata.focus(False)
 
     async def action_open_toc(self) -> None:
         if self.toc is None:
@@ -114,7 +107,6 @@ class Baca(App):
             toc = ToC(self.config, entries=toc_entries, initial_focused_id=initial_focused_id)
             # NOTE: awaiting is necessary to prevent broken layout
             await self.mount(toc)
-            toc.focus(False)
 
     async def on_follow_this(self, message: FollowThis) -> None:
         self.content.scroll_to_section(message.value)
@@ -163,4 +155,4 @@ class Baca(App):
         return self.query_one(Content.__name__, Content)
 
     def debug(self) -> None:
-        self.log("-----------", self.focused)
+        self.log(None)

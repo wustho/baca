@@ -33,6 +33,9 @@ class Window(Widget):
         await dispatch_key(self.keymaps, event)
 
     def on_mount(self) -> None:
+        # NOTE: somehow this method is automatically inherited
+        # even if the child class overriding this without super().on_moun()
+        self.focus(False)
         # Somehow cannot set border on base class,
         # this will overriding border set on inherited class
         # self.styles.border = ("double", self.styles.scrollbar_color)
@@ -87,11 +90,11 @@ class Metadata(Window):
 
 
 class FollowButton(Widget):
-    DEFAULT_CSS = """
-    FollowButton:focus {
-        background: $primary;
-    }
-    """
+    # DEFAULT_CSS = """
+    # FollowButton:focus {
+    #     background: $primary;
+    # }
+    # """
     can_focus = True
 
     def __init__(self, label: str, value: str):
@@ -100,14 +103,9 @@ class FollowButton(Widget):
         self.label = label
 
     async def on_key(self, event: events.Key) -> None:
-        callback = {"enter": self.action_follow_this}.get(event.key)
+        await dispatch_key([KeyMap(["enter"], self.action_follow_this)], event, propagate=False)
 
-        if callback is not None:
-            return_value = callback()
-            if inspect.isawaitable(return_value):
-                await return_value
-
-    async def on_mouse_move(self, _: events.MouseMove) -> None:
+    async def on_mouse_move(self, event: events.MouseMove) -> None:
         self.focus()
 
     def action_follow_this(self) -> None:
@@ -118,6 +116,12 @@ class FollowButton(Widget):
         self.styles.border = ("tall", "grey")
         self.styles.margin = (0, 1, 1, 0)
         self.styles.padding = (0, 5)
+
+    def on_focus(self) -> None:
+        self.styles.background = "red"
+
+    def on_blur(self) -> None:
+        self.styles.background = None
 
     def render(self):
         return self.label
@@ -145,6 +149,9 @@ class ToC(Window):
     def on_mount(self) -> None:
         self.styles.border = ("double", self.styles.scrollbar_color)
 
+    def on_focus(self) -> None:
+        # always make the focus to the entries
+        # and let the entries pass the key event to this window
         if len(self.entries):
             if self.initial_focused_id is None:
                 self.entry_widgets[0].focus()

@@ -6,8 +6,8 @@ from textual.widget import Widget
 from textual.widgets import DataTable, LoadingIndicator, Static
 from textual.widgets.markdown import Markdown as PrettyMarkdown
 
-from ..ebooks import Ebook
 from ..config import Config
+from ..ebooks import Ebook
 from ..models import Layers, SegmentType
 from .events import OpenThisImage
 
