@@ -16,6 +16,7 @@ python = "^3.10"
 textual = "^0.16.0"
 beautifulsoup4 = "^4.12.0"
 markdownify = "^0.11.6"
+appdirs = "^1.4.4"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.1.0"

@@ -14,7 +14,7 @@ from textual.widgets import LoadingIndicator
 from .components.contents import Content
 from .components.events import DoneLoading, FollowThis, OpenThisImage
 from .components.windows import Alert, Metadata, ToC
-from .config import load_config
+from .config import load_user_config
 from .ebooks import Ebook
 from .models import KeyMap
 from .utils.keys_parser import dispatch_key
@@ -25,7 +25,7 @@ class Baca(App):
     CSS_PATH = resource_filename(__name__, "resources/style.css")
 
     def __init__(self, ebook: Ebook):
-        self.config = load_config()  # load first to resolve colors
+        self.config = load_user_config()  # load first to resolve colors
         super().__init__()
         # TODO: move initializing ebook to self.load_everything()
         self.ebook = ebook
