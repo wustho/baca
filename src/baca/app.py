@@ -1,5 +1,6 @@
 import os
 import subprocess
+from dataclasses import asdict
 from datetime import datetime
 
 from pkg_resources import resource_filename
@@ -13,7 +14,7 @@ from textual.widgets import LoadingIndicator
 
 from .components.contents import Content
 from .components.events import DoneLoading, FollowThis, OpenThisImage
-from .components.windows import Alert, Metadata, ToC
+from .components.windows import Alert, DictDisplay, ToC
 from .config import load_user_config
 from .ebooks import Ebook
 from .models import KeyMap
@@ -86,6 +87,7 @@ class Baca(App):
                 KeyMap(keymaps.end, self.screen.action_scroll_end),
                 KeyMap(keymaps.open_toc, self.action_open_toc),
                 KeyMap(keymaps.open_metadata, self.action_open_metadata),
+                KeyMap(keymaps.open_help, self.action_open_help),
                 KeyMap(keymaps.toggle_dark, self.action_toggle_dark),
                 KeyMap(keymaps.screenshot, lambda: self.save_screenshot(f"baca_{datetime.now().isoformat()}.svg")),
                 # KeyMap(["D"], self.debug),
@@ -105,12 +107,20 @@ class Baca(App):
         yield LoadingIndicator(id="startup-loader")
 
     async def action_open_metadata(self) -> None:
-        if self.metadata is None:
-            metadata = Metadata(self.config, self.ebook.get_meta())
-            await self.mount(metadata)
+        if self.metadata_window is None:
+            metadata_window = DictDisplay(
+                config=self.config, id="metadata", title="Metadata", data=asdict(self.ebook.get_meta())
+            )
+            await self.mount(metadata_window)
+
+    async def action_open_help(self) -> None:
+        if self.help_window is None:
+            keymap_data = {k.replace("_", " ").title(): ",".join(v) for k, v in asdict(self.config.keymaps).items()}
+            help_window = DictDisplay(config=self.config, id="help", title="Metadata", data=keymap_data)
+            await self.mount(help_window)
 
     async def action_open_toc(self) -> None:
-        if self.toc is None:
+        if self.toc_window is None:
             toc_entries = list(self.ebook.get_toc())
             if len(toc_entries) == 0:
                 return await self.alert("No content navigations for this ebook.")
@@ -129,7 +139,7 @@ class Baca(App):
     async def on_follow_this(self, message: FollowThis) -> None:
         self.content.scroll_to_section(message.value)
         # NOTE: remove after refresh so the event get handled
-        self.call_after_refresh(self.toc.remove)  # type: ignore
+        self.call_after_refresh(self.toc_window.remove)  # type: ignore
 
     async def on_open_this_image(self, message: OpenThisImage) -> None:
         filename, bytestr = self.ebook.get_img_bytestr(message.value)
@@ -155,16 +165,23 @@ class Baca(App):
             self.ebook.cleanup()
 
     @property
-    def toc(self) -> ToC | None:
+    def toc_window(self) -> ToC | None:
         try:
             return self.query_one(ToC.__name__, ToC)
         except NoMatches:
             return None
 
     @property
-    def metadata(self) -> Metadata | None:
+    def metadata_window(self) -> DictDisplay | None:
         try:
-            return self.query_one(Metadata.__name__, Metadata)
+            return self.get_widget_by_id("metadata", DictDisplay)
+        except NoMatches:
+            return None
+
+    @property
+    def help_window(self) -> DictDisplay | None:
+        try:
+            return self.get_widget_by_id("help", DictDisplay)
         except NoMatches:
             return None
 

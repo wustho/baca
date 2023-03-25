@@ -1,14 +1,13 @@
 import os
 import shutil
-from pkg_resources import resource_filename
 from configparser import ConfigParser
 from typing import Literal, cast
 
 import appdirs
+from pkg_resources import resource_filename
 
-from .models import Config, Color, Keymaps
 from . import __appname__ as appname
-
+from .models import Color, Config, Keymaps
 
 DEFAULT_CONFIG = resource_filename(__name__, "resources/config.ini")
 

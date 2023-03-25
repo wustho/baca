@@ -5,7 +5,7 @@ from textual.app import ComposeResult
 from textual.widget import Widget
 from textual.widgets import Static
 
-from ..models import BookMetadata, Config, KeyMap, TocEntry
+from ..models import Config, KeyMap, TocEntry
 from ..utils.keys_parser import dispatch_key
 from .contents import Table
 from .events import FollowThis
@@ -59,15 +59,14 @@ class Alert(Window):
     # def render(self):
 
 
-class Metadata(Window):
-    border_title = "Metadata"
-
-    def __init__(self, config: Config, metadata: BookMetadata):
+class DictDisplay(Window):
+    def __init__(self, config: Config, id: str, title: str, data: dict):
         super().__init__(config)
-        self.metadata = metadata
+        self.data = data
+        self.border_title = title
 
     def compose(self) -> ComposeResult:
-        yield Table(headers=["key", "value"], rows=[(k, v) for k, v in asdict(self.metadata).items()])
+        yield Table(headers=["key", "value"], rows=[(k, v) for k, v in self.data.items()])
 
 
 class FollowButton(Widget):

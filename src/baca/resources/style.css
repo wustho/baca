@@ -87,7 +87,7 @@ Window {
   border: double $light-accent;
 }
 
-Metadata {
+DictDisplay {
   align: center top;
 }
 
