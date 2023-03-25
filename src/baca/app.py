@@ -55,20 +55,24 @@ class Baca(App):
         await self.mount(alert)
 
     async def on_key(self, event: events.Key) -> None:
-        cfgkeymaps = self.config.keymaps
-        keymaps = [
-            KeyMap(cfgkeymaps.close, self.action_quit),
-            KeyMap(cfgkeymaps.scroll_down, self.screen.action_scroll_down),
-            KeyMap(cfgkeymaps.scroll_up, self.screen.action_scroll_up),
-            KeyMap(cfgkeymaps.page_up, self.screen.action_page_up),
-            KeyMap(cfgkeymaps.page_down, self.screen.action_page_down),
-            KeyMap(cfgkeymaps.open_toc, self.action_open_toc),
-            KeyMap(cfgkeymaps.open_metadata, self.action_open_metadata),
-            KeyMap(cfgkeymaps.toggle_dark, self.action_toggle_dark),
-            KeyMap(cfgkeymaps.screenshot, lambda: self.save_screenshot(f"baca_{datetime.now().isoformat()}.svg")),
-            KeyMap(["D"], self.debug),
-        ]
-        await dispatch_key(keymaps, event)
+        keymaps = self.config.keymaps
+        await dispatch_key(
+            [
+                KeyMap(keymaps.close, self.action_quit),
+                KeyMap(keymaps.scroll_down, self.screen.action_scroll_down),
+                KeyMap(keymaps.scroll_up, self.screen.action_scroll_up),
+                KeyMap(keymaps.page_up, self.screen.action_page_up),
+                KeyMap(keymaps.page_down, self.screen.action_page_down),
+                KeyMap(keymaps.home, self.screen.action_scroll_home),
+                KeyMap(keymaps.end, self.screen.action_scroll_end),
+                KeyMap(keymaps.open_toc, self.action_open_toc),
+                KeyMap(keymaps.open_metadata, self.action_open_metadata),
+                KeyMap(keymaps.toggle_dark, self.action_toggle_dark),
+                KeyMap(keymaps.screenshot, lambda: self.save_screenshot(f"baca_{datetime.now().isoformat()}.svg")),
+                # KeyMap(["D"], self.debug),
+            ],
+            event,
+        )
 
     def on_mount(self) -> None:
         # self.styles.background =None

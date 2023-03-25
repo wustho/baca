@@ -97,8 +97,9 @@ class FollowButton(Widget):
     # """
     can_focus = True
 
-    def __init__(self, label: str, value: str):
+    def __init__(self, config: Config, label: str, value: str):
         super().__init__()
+        self.config = config
         self.value = value
         self.label = label
 
@@ -118,7 +119,7 @@ class FollowButton(Widget):
         self.styles.padding = (0, 5)
 
     def on_focus(self) -> None:
-        self.styles.background = "red"
+        self.styles.background = self.config.dark.accent
 
     def on_blur(self) -> None:
         self.styles.background = None
@@ -139,11 +140,13 @@ class ToC(Window):
         super().__init__(config)
         self.entries = entries
         self.initial_focused_id = initial_focused_id
-        self.entry_widgets = [FollowButton(entry.label, entry.value) for entry in self.entries]
+        self.entry_widgets = [FollowButton(self.config, entry.label, entry.value) for entry in self.entries]
         self.keymaps = [
             KeyMap(config.keymaps.close + config.keymaps.open_toc, self.action_close),
             KeyMap(config.keymaps.scroll_down, self.action_focus_next_child),
             KeyMap(config.keymaps.scroll_up, self.action_focus_prev_child),
+            KeyMap(config.keymaps.home, lambda: self.entry_widgets[0].focus()),
+            KeyMap(config.keymaps.end, lambda: self.entry_widgets[-1].focus()),
         ]
 
     def on_mount(self) -> None:

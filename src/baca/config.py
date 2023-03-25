@@ -27,6 +27,8 @@ ScrollDown = down,j
 ScrollUp = up,k
 PageDown = ctrl+f,pagedown
 PageUp = ctrl+b,pageup
+Home = home,g
+End = end,G
 OpenToc = tab
 OpenMetadata = M
 OpenHelp = question_mark
@@ -47,6 +49,8 @@ class Keymaps:
     toggle_dark: list[str]
     scroll_down: list[str]
     scroll_up: list[str]
+    home: list[str]
+    end: list[str]
     page_up: list[str]
     page_down: list[str]
     open_toc: list[str]
@@ -92,6 +96,8 @@ def load_config(config_str: str = DEFAULT) -> Config:
             scroll_up=parser["Keymaps"]["ScrollUp"].split(","),
             page_up=parser["Keymaps"]["PageUp"].split(","),
             page_down=parser["Keymaps"]["PageDown"].split(","),
+            home=parser["Keymaps"]["Home"].split(","),
+            end=parser["Keymaps"]["End"].split(","),
             open_toc=parser["Keymaps"]["OpenToc"].split(","),
             open_metadata=parser["Keymaps"]["OpenMetadata"].split(","),
             open_help=parser["Keymaps"]["OpenHelp"].split(","),
