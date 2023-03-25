@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
+from typing import Callable
 
 
 @dataclass(frozen=True)
@@ -36,3 +37,9 @@ class Layers(Enum):
 class Segment:
     type: SegmentType
     content: str
+
+
+@dataclass
+class KeyMap:
+    keys: list[str]
+    action: Callable

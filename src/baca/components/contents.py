@@ -6,10 +6,10 @@ from textual.widget import Widget
 from textual.widgets import DataTable, LoadingIndicator, Static
 from textual.widgets.markdown import Markdown as PrettyMarkdown
 
+from ..config import config
 from ..ebooks import Ebook
 from ..models import Layers, SegmentType
 from .events import OpenThisImage
-from ..config import config
 
 
 class Table(DataTable):

@@ -18,9 +18,9 @@ from textual.widgets import LoadingIndicator
 from .components.contents import Content
 from .components.events import DoneLoading, FollowThis, OpenThisImage
 from .components.windows import Alert, Metadata, ToC
+from .config import config
 from .ebooks import Ebook
 from .models import Layers
-from .config import config
 
 
 # TODO: reorganize methods order
@@ -43,17 +43,17 @@ class Baca(App):
 
     async def on_key(self, event: events.Key) -> None:
         callback = {
-            **{k: self.action_quit for k in config.keybindings.close},
-            **{k: self.screen.action_scroll_down for k in config.keybindings.scroll_down},
-            **{k: self.screen.action_scroll_up for k in config.keybindings.scroll_up},
-            **{k: self.screen.action_page_down for k in config.keybindings.page_down},
-            **{k: self.screen.action_page_up for k in config.keybindings.page_up},
-            **{k: self.action_open_toc for k in config.keybindings.open_toc},
-            **{k: self.action_open_metadata for k in config.keybindings.open_metadata},
-            **{k: self.action_toggle_dark for k in config.keybindings.toggle_dark},
+            **{k: self.action_quit for k in config.keymaps.close},
+            **{k: self.screen.action_scroll_down for k in config.keymaps.scroll_down},
+            **{k: self.screen.action_scroll_up for k in config.keymaps.scroll_up},
+            **{k: self.screen.action_page_down for k in config.keymaps.page_down},
+            **{k: self.screen.action_page_up for k in config.keymaps.page_up},
+            **{k: self.action_open_toc for k in config.keymaps.open_toc},
+            **{k: self.action_open_metadata for k in config.keymaps.open_metadata},
+            **{k: self.action_toggle_dark for k in config.keymaps.toggle_dark},
             **{
                 k: lambda: self.save_screenshot(f"baca_{datetime.now().isoformat()}.svg")
-                for k in config.keybindings.screenshot
+                for k in config.keymaps.screenshot
             },
             # "D": self.debug,
             # "D": self.debug_async,

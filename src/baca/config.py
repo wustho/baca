@@ -1,7 +1,6 @@
-from dataclasses import dataclass
 from configparser import ConfigParser
+from dataclasses import dataclass
 from typing import Literal, cast
-
 
 DEFAULT = """\
 [General]
@@ -22,7 +21,7 @@ Background = #ffffff
 Foreground = #000000
 Accent = #00ff00
 
-[Keybindings]
+[Keymaps]
 ToggleLightDark = c
 ScrollDown = down,j
 ScrollUp = up,k
@@ -44,7 +43,7 @@ class Color:
 
 
 @dataclass
-class Keybindings:
+class Keymaps:
     toggle_dark: list[str]
     scroll_down: list[str]
     scroll_up: list[str]
@@ -64,7 +63,7 @@ class Config:
     pretty: bool
     dark: Color
     light: Color
-    keybindings: Keybindings
+    keymaps: Keymaps
 
 
 def load_config_str(config_str: str = DEFAULT) -> Config:
@@ -87,17 +86,17 @@ def load_config_str(config_str: str = DEFAULT) -> Config:
             fg=parser["Color Light"]["Foreground"],
             accent=parser["Color Light"]["Accent"],
         ),
-        keybindings=Keybindings(
-            toggle_dark=parser["Keybindings"]["ToggleLightDark"].split(","),
-            scroll_down=parser["Keybindings"]["ScrollDown"].split(","),
-            scroll_up=parser["Keybindings"]["ScrollUp"].split(","),
-            page_up=parser["Keybindings"]["PageUp"].split(","),
-            page_down=parser["Keybindings"]["PageDown"].split(","),
-            open_toc=parser["Keybindings"]["OpenToc"].split(","),
-            open_metadata=parser["Keybindings"]["OpenMetadata"].split(","),
-            open_help=parser["Keybindings"]["OpenHelp"].split(","),
-            close=parser["Keybindings"]["CloseOrQuit"].split(","),
-            screenshot=parser["Keybindings"]["Screenshot"].split(","),
+        keymaps=Keymaps(
+            toggle_dark=parser["Keymaps"]["ToggleLightDark"].split(","),
+            scroll_down=parser["Keymaps"]["ScrollDown"].split(","),
+            scroll_up=parser["Keymaps"]["ScrollUp"].split(","),
+            page_up=parser["Keymaps"]["PageUp"].split(","),
+            page_down=parser["Keymaps"]["PageDown"].split(","),
+            open_toc=parser["Keymaps"]["OpenToc"].split(","),
+            open_metadata=parser["Keymaps"]["OpenMetadata"].split(","),
+            open_help=parser["Keymaps"]["OpenHelp"].split(","),
+            close=parser["Keymaps"]["CloseOrQuit"].split(","),
+            screenshot=parser["Keymaps"]["Screenshot"].split(","),
         ),
     )
 

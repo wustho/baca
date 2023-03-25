@@ -1,42 +1,32 @@
 import inspect
 from dataclasses import asdict
 
-from rich.text import Text
 from textual import events
 from textual.actions import SkipAction
 from textual.app import ComposeResult
-from textual.message import Message
 from textual.widget import Widget
-from textual.widgets import DataTable, Static
+from textual.widgets import Static
 
-from ..models import BookMetadata, Layers, TocEntry
+from ..config import Keymaps, config
+from ..models import BookMetadata, KeyMap, Layers, TocEntry
+from ..utils.keys_parser import dispatch_key
 from .contents import Table
 from .events import FollowThis
 
 
 class Window(Widget):
+    def __init__(self, keymaps: Keymaps = config.keymaps):
+        super().__init__()
+        self.keymaps = [
+            KeyMap(keymaps.close, self.action_close),
+            KeyMap(keymaps.scroll_down, self.action_scroll_down),
+            KeyMap(keymaps.scroll_up, self.action_scroll_up),
+            KeyMap(keymaps.page_down, self.action_page_down),
+            KeyMap(keymaps.page_up, self.action_page_up),
+        ]
+
     async def on_key(self, event: events.Key) -> None:
-        callback = {
-            # NOTE: somehow cannot be bound directly
-            # to self.remove for closing, doing it will freeze the app
-            # so self.action_close
-            **{k: self.action_close for k in ["q", "escape"]},
-            **{k: self.action_scroll_down for k in ["j", "down"]},
-            **{k: self.action_scroll_up for k in ["k", "up"]},
-            "ctrl+f": self.action_page_down,
-            "ctrl+b": self.action_page_up,
-        }.get(event.key)
-
-        if callback is not None:
-            try:
-                return_value = callback()
-                if inspect.isawaitable(return_value):
-                    await return_value
-            except SkipAction:
-                pass
-
-        event.stop()
-        event.prevent_default()
+        await dispatch_key(self.keymaps, event)
 
     def on_mount(self) -> None:
         # Somehow cannot set border on base class,
@@ -81,8 +71,8 @@ class Metadata(Window):
     border_title = "Metadata"
     can_focus = True
 
-    def __init__(self, metadata: BookMetadata):
-        super().__init__()
+    def __init__(self, metadata: BookMetadata, keymaps: Keymaps = config.keymaps):
+        super().__init__(keymaps=keymaps)
         self.metadata = metadata
 
     def on_mount(self) -> None:
@@ -102,7 +92,7 @@ class FollowButton(Widget):
     """
     can_focus = True
 
-    def __init__(self, label: str, value: str | int):
+    def __init__(self, label: str, value: str):
         super().__init__()
         self.value = value
         self.label = label
@@ -139,11 +129,18 @@ class FollowButton(Widget):
 class ToC(Window):
     border_title = "Table of Contents"
 
-    def __init__(self, entries: list[TocEntry], initial_focused_id: str | None = None):
-        super().__init__()
+    def __init__(
+        self, entries: list[TocEntry], initial_focused_id: str | None = None, keymaps: Keymaps = config.keymaps
+    ):
+        super().__init__(keymaps=keymaps)
         self.entries = entries
         self.initial_focused_id = initial_focused_id
         self.entry_widgets = [FollowButton(entry.label, entry.value) for entry in self.entries]
+        self.keymaps = [
+            KeyMap(config.keymaps.close + config.keymaps.open_toc, self.action_close),
+            KeyMap(config.keymaps.scroll_down, self.action_focus_next_child),
+            KeyMap(config.keymaps.scroll_up, self.action_focus_prev_child),
+        ]
 
     def on_mount(self) -> None:
         self.styles.border = ("double", self.styles.scrollbar_color)
@@ -157,21 +154,6 @@ class ToC(Window):
                         w.focus()
                         w.scroll_visible(top=True)
                         break
-
-    async def on_key(self, event: events.Key) -> None:
-        callback = {
-            **{k: self.action_close for k in ["q", "escape", "tab"]},
-            **{k: self.action_focus_next_child for k in ["j", "down"]},
-            **{k: self.action_focus_prev_child for k in ["k", "up"]},
-        }.get(event.key)
-
-        if callback is not None:
-            return_value = callback()
-            if inspect.isawaitable(return_value):
-                await return_value
-
-        event.stop()
-        event.prevent_default()  # stopping the event from being handled by base class
 
     # TODO: simplify
     def action_focus_next_child(self) -> None:
