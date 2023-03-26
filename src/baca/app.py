@@ -13,7 +13,7 @@ from .components.contents import Content
 from .components.events import DoneLoading, FollowThis, OpenThisImage, Screenshot
 from .components.windows import Alert, DictDisplay, ToC
 from .config import load_user_config
-from .ebooks import Ebook, Epub
+from .ebooks import Ebook, Epub, Azw
 from .models import KeyMap, ReadingHistory
 from .utils.keys_parser import dispatch_key
 
@@ -22,9 +22,9 @@ class Baca(App):
     CSS_PATH = str(resources.path("baca.resources", "style.css"))
 
     def __init__(self, ebook_path: Path):
-        self.config = load_user_config()  # load first to resolve colors
+        # load first to resolve css variables
+        self.config = load_user_config()
         super().__init__()
-        # TODO: move initializing ebook to self.load_everything()
         self.ebook_path = ebook_path
         # TODO: make reactive and display percentage
         # as alternative for scrollbar
@@ -35,7 +35,8 @@ class Baca(App):
         self._loop.run_in_executor(None, self.load_everything)
 
     def load_everything(self):
-        self.ebook = Epub(self.ebook_path)
+        # self.ebook = Epub(self.ebook_path)
+        self.ebook = Azw(self.ebook_path)
         content = Content(self.config, self.ebook)
         self.ebook_state, _ = ReadingHistory.get_or_create(
             filepath=str(self.ebook.get_path()), defaults=dict(reading_progress=0.0)
@@ -110,7 +111,7 @@ class Baca(App):
                 KeyMap(keymaps.open_help, self.action_open_help),
                 KeyMap(keymaps.toggle_dark, self.action_toggle_dark),
                 KeyMap(keymaps.screenshot, lambda: self.post_message(Screenshot())),
-                KeyMap(["D"], lambda: self.log()),
+                # KeyMap(["D"], lambda: self.log()),
             ],
             event,
         )

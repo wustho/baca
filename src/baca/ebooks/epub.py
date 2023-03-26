@@ -1,6 +1,5 @@
 import dataclasses
 import os
-import shutil
 import tempfile
 import xml.etree.ElementTree as ET
 import zipfile
@@ -12,6 +11,7 @@ from urllib.parse import unquote, urljoin, urlparse
 from ..models import BookMetadata, Segment, TocEntry
 from ..utils.html_parser import parse_html_to_segmented_md
 from .base import Ebook
+from .. import __appname__
 
 
 class Epub(Ebook):
@@ -28,7 +28,7 @@ class Epub(Ebook):
     def __init__(self, fileepub: Path):
         self._path = fileepub.resolve()
         self._file: zipfile.ZipFile = zipfile.ZipFile(fileepub, "r")
-        self._tempdir = Path(tempfile.mkdtemp(prefix="baca-"))
+        self._tempdir = Path(tempfile.mkdtemp(prefix=f"{__appname__}-"))
 
     def get_path(self) -> Path:
         return self._path
@@ -262,9 +262,6 @@ class Epub(Ebook):
     def get_img_bytestr(self, impath: str) -> tuple[str, bytes]:
         assert isinstance(self._file, zipfile.ZipFile)
         return os.path.basename(impath), self._file.read(impath)
-
-    def cleanup(self) -> None:
-        shutil.rmtree(self.get_tempdir())
 
     def iter_parsed_contents(self) -> Iterator[Segment]:
         toc_entries = self.get_toc()

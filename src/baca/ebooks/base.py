@@ -1,4 +1,5 @@
 import xml.etree.ElementTree as ET
+import shutil
 from pathlib import Path
 from typing import Iterator
 
@@ -22,7 +23,7 @@ class Ebook:
         raise NotImplementedError()
 
     def cleanup(self) -> None:
-        raise NotImplementedError()
+        shutil.rmtree(self.get_tempdir())
 
     # TODO: maybe cache @lru_cache
     def get_toc(self) -> tuple[TocEntry, ...]:
