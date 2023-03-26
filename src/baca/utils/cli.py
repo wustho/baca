@@ -24,6 +24,11 @@ def print_danger(message: str):
     sys.exit(-1)
 
 
+def format_file_size(pathstr: str) -> str:
+    byte_size = Path(pathstr).stat().st_size
+    return f"{round(byte_size / 1024, 2)} kb" if byte_size <= 1024**2 else f"{round(byte_size / (1024 ** 2), 2)} mb"
+
+
 def print_reading_history() -> None:
     table = Table(title="Baca History")
     table.add_column("#", style="cyan", no_wrap=True, justify="right")
@@ -32,6 +37,7 @@ def print_reading_history() -> None:
     table.add_column("Title", style="magenta", no_wrap=True)
     table.add_column("Author", style="green", no_wrap=True)
     table.add_column("Path", style="white", no_wrap=True)
+    table.add_column("Size", style="blue", no_wrap=True, justify="right")
 
     for n, rh in enumerate(get_all_reading_history()):
         table.add_row(
@@ -41,6 +47,7 @@ def print_reading_history() -> None:
             rh.title,  # type: ignore
             rh.author,  # type: ignore
             rh.filepath,  # type: ignore
+            format_file_size(rh.filepath),  # type: ignore
         )
 
     Console().print(table)
@@ -51,8 +58,7 @@ def parse_cli_args() -> argparse.Namespace:
     positional_arg_help_str = "[PATH | # | PATTERN | URL]"
     args_parser = argparse.ArgumentParser(
         prog=prog,
-        # usage=f"%(prog)s [-h] [-r] [-d] [-v] {positional_arg_help_str}",
-        usage=f"%(prog)s [-h] [-v] {positional_arg_help_str}",
+        usage=f"%(prog)s [-h] [-r] [-v] {positional_arg_help_str}",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description="TUI Ebook Reader",
         epilog=textwrap.dedent(
@@ -61,7 +67,7 @@ def parse_cli_args() -> argparse.Namespace:
           {prog} /path/to/ebook    read /path/to/ebook file
           {prog} 3                 read #3 file from reading history
           {prog} count monte       read file matching 'count monte'
-                                from reading history
+                                   from reading history
         """
         ),
     )
@@ -114,7 +120,8 @@ def find_file() -> Path:
     pattern = " ".join(args.ebook)
     ebook_path = get_best_match_from_history(pattern)
     if ebook_path is None:
-        print_danger("found no matching ebook!")
+        print_reading_history()
+        print_danger("found no matching ebook from history!")
     else:
         return ebook_path
 
