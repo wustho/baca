@@ -148,7 +148,7 @@ class Baca(App):
             initial_focused_id: str | None = None
             for s in self.content.sections:
                 if self.screen.scroll_y >= s.virtual_region.y:
-                    initial_focused_id = s.id
+                    initial_focused_id = s.value
                 else:
                     break
 

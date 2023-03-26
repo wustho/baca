@@ -1,9 +1,11 @@
-from baca.app import Baca
 from pathlib import Path
-from baca.ebooks import Epub
+
+from baca.app import Baca
+from baca.utils.cli import get_ebook_class
 
 
 class Debug(Baca):
     def __init__(self):
-        file = Path("tmp/alice.epub")
-        super().__init__(file)
+        # file = Path("tmp/alice.azw3")
+        file = Path("tmp/frankenstein.older.mobi")
+        super().__init__(file, get_ebook_class(file))
