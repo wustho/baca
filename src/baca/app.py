@@ -3,6 +3,7 @@ from dataclasses import asdict
 from datetime import datetime
 from importlib import resources
 from pathlib import Path
+from typing import Type
 
 from textual import events
 from textual.app import App, ComposeResult
@@ -13,7 +14,7 @@ from .components.contents import Content
 from .components.events import DoneLoading, FollowThis, OpenThisImage, Screenshot
 from .components.windows import Alert, DictDisplay, ToC
 from .config import load_user_config
-from .ebooks import Ebook, Epub, Azw
+from .ebooks import Ebook
 from .models import KeyMap, ReadingHistory
 from .utils.keys_parser import dispatch_key
 
@@ -21,11 +22,12 @@ from .utils.keys_parser import dispatch_key
 class Baca(App):
     CSS_PATH = str(resources.path("baca.resources", "style.css"))
 
-    def __init__(self, ebook_path: Path):
+    def __init__(self, ebook_path: Path, ebook_class: Type[Ebook]):
         # load first to resolve css variables
         self.config = load_user_config()
         super().__init__()
         self.ebook_path = ebook_path
+        self.ebook_class = ebook_class
         # TODO: make reactive and display percentage
         # as alternative for scrollbar
         self.reading_progress = 0.0
@@ -35,8 +37,7 @@ class Baca(App):
         self._loop.run_in_executor(None, self.load_everything)
 
     def load_everything(self):
-        # self.ebook = Epub(self.ebook_path)
-        self.ebook = Azw(self.ebook_path)
+        self.ebook = self.ebook_class(self.ebook_path)
         content = Content(self.config, self.ebook)
         self.ebook_state, _ = ReadingHistory.get_or_create(
             filepath=str(self.ebook.get_path()), defaults=dict(reading_progress=0.0)
@@ -59,6 +60,7 @@ class Baca(App):
 
         def init_render() -> None:
             # restore reading progress
+            # make sure to call this after refresh so the screen.max_scroll_y != 0
             historic_y = self.ebook_state.reading_progress * self.screen.max_scroll_y
             self.screen.scroll_to(None, historic_y, speed=0, animate=False)  # type: ignore
 

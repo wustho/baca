@@ -37,7 +37,7 @@ class ReadingHistory(BaseModel):
 @dataclass(frozen=True)
 class Migration:
     version: int
-    migrate: Callable[[SqliteDatabase], None]
+    migrate: Callable[[], None]
 
 
 class SegmentType(Enum):

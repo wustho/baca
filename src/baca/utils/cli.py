@@ -2,12 +2,14 @@ import argparse
 import sys
 import textwrap
 from pathlib import Path
+from typing import Type
 
 from rich.console import Console
 from rich.table import Table
 from rich.text import Text
 
 from .. import __appname__, __version__
+from ..ebooks import Azw, Ebook, Epub
 from .queries import (
     get_all_reading_history,
     get_best_match_from_history,
@@ -18,7 +20,7 @@ from .queries import (
 
 def print_danger(message: str):
     console = Console()
-    console.print(Text(message, style="bold red"))
+    console.print(Text(f"BacaError: {message}", style="bold red"))
     sys.exit(-1)
 
 
@@ -92,7 +94,7 @@ def find_file() -> Path:
         if last_read is not None:
             return last_read
         else:
-            print_danger("Error: found no last read ebook file!")
+            print_danger("found no last read ebook file!")
 
     elif len(args.ebook) == 1:
         arg = args.ebook[0]
@@ -101,7 +103,7 @@ def find_file() -> Path:
             ebook_path = get_nth_file_from_history(nth)
             if ebook_path is None:
                 print_reading_history()
-                print_danger(f"Error: #{nth} file not found from history!")
+                print_danger(f"#{nth} file not found from history!")
             else:
                 return ebook_path
 
@@ -112,6 +114,19 @@ def find_file() -> Path:
     pattern = " ".join(args.ebook)
     ebook_path = get_best_match_from_history(pattern)
     if ebook_path is None:
-        print_danger("Error: found no matching ebook!")
+        print_danger("found no matching ebook!")
     else:
         return ebook_path
+
+
+def get_ebook_class(ebook_path: Path) -> Type[Ebook]:
+    ext = ebook_path.suffix.lower()
+    try:
+        return {
+            ".epub": Epub,
+            ".epub3": Epub,
+            ".azw": Azw,
+            ".azw3": Azw,
+        }[ext]
+    except KeyError:
+        print_danger("format not supported!")

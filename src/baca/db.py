@@ -22,7 +22,7 @@ from .exceptions import TableDoesNotExist
 from .models import DbMetadata, Migration, ReadingHistory, db
 
 
-def initial_migration(db) -> None:
+def initial_migration() -> None:
     db.create_tables([DbMetadata, ReadingHistory])
 
 
@@ -40,7 +40,7 @@ def migrate() -> None:
                     raise TableDoesNotExist
                 DbMetadata.get_by_id(migration.version)
             except (DbMetadata.DoesNotExist, TableDoesNotExist):
-                migration.migrate(db)
+                migration.migrate()
                 DbMetadata.create(version=migration.version)
     finally:
         db.close()

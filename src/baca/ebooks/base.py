@@ -1,5 +1,5 @@
-import xml.etree.ElementTree as ET
 import shutil
+import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Iterator
 
@@ -7,7 +7,7 @@ from ..models import BookMetadata, Segment, TocEntry
 
 
 class Ebook:
-    def __init__(self, fileepub: Path):
+    def __init__(self, ebook_path: Path):
         raise NotImplementedError()
 
     def get_tempdir(self) -> Path:

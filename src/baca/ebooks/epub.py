@@ -1,6 +1,5 @@
 import dataclasses
 import os
-import tempfile
 import xml.etree.ElementTree as ET
 import zipfile
 import zlib
@@ -10,8 +9,8 @@ from urllib.parse import unquote, urljoin, urlparse
 
 from ..models import BookMetadata, Segment, TocEntry
 from ..utils.html_parser import parse_html_to_segmented_md
+from ..utils.tempdir import create_tempdir
 from .base import Ebook
-from .. import __appname__
 
 
 class Epub(Ebook):
@@ -25,10 +24,10 @@ class Epub(Ebook):
         "DC": "http://purl.org/dc/elements/1.1/",
     }
 
-    def __init__(self, fileepub: Path):
-        self._path = fileepub.resolve()
-        self._file: zipfile.ZipFile = zipfile.ZipFile(fileepub, "r")
-        self._tempdir = Path(tempfile.mkdtemp(prefix=f"{__appname__}-"))
+    def __init__(self, ebook_path: Path):
+        self._path = ebook_path.resolve()
+        self._file: zipfile.ZipFile = zipfile.ZipFile(ebook_path, "r")
+        self._tempdir = create_tempdir()
 
     def get_path(self) -> Path:
         return self._path
