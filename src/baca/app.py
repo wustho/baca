@@ -6,14 +6,11 @@ from importlib import resources
 
 from textual import events
 from textual.app import App, ComposeResult
-from textual.await_remove import AwaitRemove
 from textual.css.query import NoMatches
-from textual.dom import DOMNode
-from textual.widget import Widget
 from textual.widgets import LoadingIndicator
 
 from .components.contents import Content
-from .components.events import DoneLoading, FollowThis, OpenThisImage
+from .components.events import DoneLoading, FollowThis, OpenThisImage, Screenshot
 from .components.windows import Alert, DictDisplay, ToC
 from .config import load_user_config
 from .ebooks import Ebook, Epub
@@ -21,7 +18,6 @@ from .models import KeyMap, ReadingHistory
 from .utils.keys_parser import dispatch_key
 
 
-# TODO: reorganize methods order
 class Baca(App):
     CSS_PATH = str(resources.path("baca.resources", "style.css"))
 
@@ -33,19 +29,6 @@ class Baca(App):
         # TODO: make reactive and display percentage
         # as alternative for scrollbar
         self.reading_progress = 0.0
-
-    def on_mount(self):
-        def screen_watch_scroll_y_wrapper(old_watcher, screen):
-            def new_watcher(old, new):
-                result = old_watcher(old, new)
-                if screen.max_scroll_y != 0:
-                    self.reading_progress = new / screen.max_scroll_y
-                return result
-
-            return new_watcher
-
-        screen_scroll_y_watcher = getattr(self.screen, "watch_scroll_y")
-        setattr(self.screen, "watch_scroll_y", screen_watch_scroll_y_wrapper(screen_scroll_y_watcher, self.screen))
 
     def on_load(self, _: events.Load) -> None:
         assert self._loop is not None
@@ -82,6 +65,19 @@ class Baca(App):
 
         self.call_after_refresh(init_render)
 
+    def on_mount(self):
+        def screen_watch_scroll_y_wrapper(old_watcher, screen):
+            def new_watcher(old, new):
+                result = old_watcher(old, new)
+                if screen.max_scroll_y != 0:
+                    self.reading_progress = new / screen.max_scroll_y
+                return result
+
+            return new_watcher
+
+        screen_scroll_y_watcher = getattr(self.screen, "watch_scroll_y")
+        setattr(self.screen, "watch_scroll_y", screen_watch_scroll_y_wrapper(screen_scroll_y_watcher, self.screen))
+
     def get_css_variables(self):
         original = super().get_css_variables()
         return {
@@ -98,10 +94,6 @@ class Baca(App):
             },
         }
 
-    async def alert(self, message: str) -> None:
-        alert = Alert(self.config, message)
-        await self.mount(alert)
-
     async def on_key(self, event: events.Key) -> None:
         keymaps = self.config.keymaps
         await dispatch_key(
@@ -117,21 +109,18 @@ class Baca(App):
                 KeyMap(keymaps.open_metadata, self.action_open_metadata),
                 KeyMap(keymaps.open_help, self.action_open_help),
                 KeyMap(keymaps.toggle_dark, self.action_toggle_dark),
-                KeyMap(keymaps.screenshot, lambda: self.save_screenshot(f"baca_{datetime.now().isoformat()}.svg")),
+                KeyMap(keymaps.screenshot, lambda: self.post_message(Screenshot())),
                 KeyMap(["D"], lambda: self.log()),
             ],
             event,
         )
 
-    # def on_mount(self) -> None:
-    #     self.screen.can_focus = True
-
-    # TODO: move this to self.screen
-    # async def on_click(self):
-    #     self.query("Window").remove()
-
     def compose(self) -> ComposeResult:
         yield LoadingIndicator(id="startup-loader")
+
+    async def alert(self, message: str) -> None:
+        alert = Alert(self.config, message)
+        await self.mount(alert)
 
     async def action_open_metadata(self) -> None:
         if self.metadata_window is None:
@@ -180,10 +169,8 @@ class Baca(App):
             error_msg = e.stderr.decode() if isinstance(e, subprocess.CalledProcessError) else str(e)
             await self.alert(f"Error opening an image: {error_msg}")
 
-    def _remove_nodes(self, widgets: list[Widget], parent: DOMNode) -> AwaitRemove:
-        await_remove = super()._remove_nodes(widgets, parent)
-        self.refresh(layout=True)
-        return await_remove
+    async def on_screenshot(self, _: Screenshot) -> None:
+        self.save_screenshot(f"baca_{datetime.now().isoformat()}.svg")
 
     def run(self, *args, **kwargs):
         try:
@@ -221,3 +208,10 @@ class Baca(App):
     @property
     def content(self) -> Content:
         return self.query_one(Content.__name__, Content)
+
+    # def _remove_nodes(self, widgets: list[Widget], parent: DOMNode) -> AwaitRemove:
+    #     await_remove = super()._remove_nodes(widgets, parent)
+    #     self.refresh(layout=True)
+    #     return await_remove
+    # def on_mount(self) -> None:
+    #     self.screen.can_focus = True

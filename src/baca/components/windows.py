@@ -8,7 +8,7 @@ from textual.widgets import Static
 from ..models import Config, KeyMap, TocEntry
 from ..utils.keys_parser import dispatch_key
 from .contents import Table
-from .events import FollowThis
+from .events import FollowThis, Screenshot
 
 
 class Window(Widget):
@@ -24,6 +24,7 @@ class Window(Widget):
             KeyMap(keymaps.scroll_up, self.action_scroll_up),
             KeyMap(keymaps.page_down, self.action_page_down),
             KeyMap(keymaps.page_up, self.action_page_up),
+            KeyMap(keymaps.screenshot, lambda: self.post_message(Screenshot())),
         ]
 
     async def on_key(self, event: events.Key) -> None:
@@ -104,12 +105,14 @@ class ToC(Window):
         self.entries = entries
         self.initial_focused_id = initial_focused_id
         self.entry_widgets = [FollowButton(self.config, entry.label, entry.value) for entry in self.entries]
+        keymaps = config.keymaps
         self.keymaps = [
-            KeyMap(config.keymaps.close + config.keymaps.open_toc, self.action_close),
-            KeyMap(config.keymaps.scroll_down, self.action_focus_next_child),
-            KeyMap(config.keymaps.scroll_up, self.action_focus_prev_child),
-            KeyMap(config.keymaps.home, lambda: self.entry_widgets[0].focus()),
-            KeyMap(config.keymaps.end, lambda: self.entry_widgets[-1].focus()),
+            KeyMap(keymaps.close + config.keymaps.open_toc, self.action_close),
+            KeyMap(keymaps.scroll_down, self.action_focus_next_child),
+            KeyMap(keymaps.scroll_up, self.action_focus_prev_child),
+            KeyMap(keymaps.home, lambda: self.entry_widgets[0].focus()),
+            KeyMap(keymaps.end, lambda: self.entry_widgets[-1].focus()),
+            KeyMap(keymaps.screenshot, lambda: self.post_message(Screenshot())),
         ]
 
     def on_focus(self) -> None:

@@ -17,3 +17,7 @@ class OpenThisImage(Message):
     def __init__(self, value: str):
         super().__init__()
         self.value = value
+
+
+class Screenshot(Message):
+    pass
