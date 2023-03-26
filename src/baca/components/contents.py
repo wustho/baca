@@ -69,10 +69,11 @@ class PrettyBody(PrettyMarkdown):
 
 class Section(SegmentWidget):
     def __init__(self, config: Config, value: str):
-        super().__init__(config=config, id=value)
+        super().__init__(config=config)
+        self.value = value
 
     def render(self):
-        return self.id
+        return self.value
 
 
 class Content(Widget):
@@ -99,7 +100,7 @@ class Content(Widget):
     def scroll_to_section(self, id: str) -> None:
         # TODO: add attr TocEntry.uuid so we can query("#{uuid}")
         for s in self.sections:
-            if s.id == id:
+            if s.value == id:
                 s.scroll_visible(top=True)
                 break
 

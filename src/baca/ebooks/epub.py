@@ -36,45 +36,17 @@ class Epub(Ebook):
         return self._tempdir
 
     def get_meta(self) -> BookMetadata:
-        assert isinstance(self._file, zipfile.ZipFile)
-        content_opf = ET.parse(self._file.open(self._root_filepath))
+        # content_opf = ET.parse(self._file.open(self._root_filepath))
         metadata: dict[str, str | None] = {}
         for field in dataclasses.fields(BookMetadata):
-            element = content_opf.find(f".//DC:{field.name}", Epub.NAMESPACE)
+            element = self._content_opf.find(f".//DC:{field.name}", Epub.NAMESPACE)
             if element is not None:
                 metadata[field.name] = element.text
         return BookMetadata(**metadata)
 
-    @staticmethod
-    def _parse_opf(content_opf: ET.ElementTree) -> tuple[str, ...]:
-        # cont = ET.parse(self.file.open(self.root_filepath)).getroot()
-        manifests: list[tuple[str, str]] = []
-        for manifest_elem in content_opf.findall("OPF:manifest/*", Epub.NAMESPACE):
-            # EPUB3
-            # if manifest_elem.get("id") != "ncx" and manifest_elem.get("properties") != "nav":
-            if (
-                manifest_elem.get("media-type") != "application/x-dtbncx+xml"
-                and manifest_elem.get("properties") != "nav"
-            ):
-                manifest_id = manifest_elem.get("id")
-                manifest_href = manifest_elem.get("href")
-                manifests.append((manifest_id, manifest_href))  # type: ignore
-
-        spines: list[str] = []
-        contents: list[str] = []
-        for spine_elem in content_opf.findall("OPF:spine/*", Epub.NAMESPACE):
-            idref = spine_elem.get("idref")
-            spines.append(idref)  # type: ignore
-        for spine in spines:
-            for manifest in manifests:
-                if spine == manifest[0]:
-                    # book_contents.append(root_dirpath + unquote(manifest[1]))
-                    contents.append(unquote(manifest[1]))
-                    manifests.remove(manifest)
-                    # TODO: test is break necessary
-                    break
-
-        return tuple(contents)
+    # @staticmethod
+    # def _parse_opf(content_opf: ET.ElementTree) -> tuple[str, ...]:
+    #     pass
 
     @staticmethod
     def _parse_toc(toc: ET.Element, version: str, root_dirpath) -> tuple[TocEntry, ...]:
@@ -85,7 +57,7 @@ class Epub(Ebook):
             elif version == "3.0":
                 navPoints = toc.findall("XHTML:body//XHTML:nav[@EPUB:type='toc']//XHTML:a", Epub.NAMESPACE)
             else:
-                raise NotImplementedError()
+                raise NotImplementedError(f"Unsupported Epub version: {version}")
 
             toc_entries: list[TocEntry] = []
             for navPoint in navPoints:
@@ -100,9 +72,8 @@ class Epub(Ebook):
                     src = src_elem.get("href")
 
                     name = "".join(list(navPoint.itertext()))
-
-                # TODO: cleanup
-                # src_id = src.split("#")
+                else:
+                    raise NotImplementedError(f"Unsupported Epub version: {version}")
 
                 # try:
                 #     idx = contents.index(unquote(src_id[0]))
@@ -140,8 +111,8 @@ class Epub(Ebook):
         return ET.parse(self._file.open(self._root_filepath))
 
     @property
-    def _version(self) -> str | None:
-        return self._content_opf.getroot().get("version")
+    def _version(self) -> str:
+        return self._content_opf.getroot().get("version")  # type: ignore
 
     def _get_contents(self) -> tuple[str, ...] | tuple[ET.Element, ...]:
         # contents = Epub._parse_opf(self._content_opf)
@@ -190,53 +161,7 @@ class Epub(Ebook):
         toc_path = self._root_dirpath + relative_toc_path  # type: ignore
         toc = ET.parse(self._file.open(toc_path)).getroot()
 
-        try:
-            if version in {"1.0", "2.0"}:
-                navPoints = toc.findall("DAISY:navMap//DAISY:navPoint", Epub.NAMESPACE)
-            elif version == "3.0":
-                navPoints = toc.findall("XHTML:body//XHTML:nav[@EPUB:type='toc']//XHTML:a", Epub.NAMESPACE)
-            else:
-                raise NotImplementedError(f"Unsupported Epub version: {version}")
-
-            toc_entries: list[TocEntry] = []
-            for navPoint in navPoints:
-                if version in {"1.0", "2.0"}:
-                    src_elem = navPoint.find("DAISY:content", Epub.NAMESPACE)
-                    src = src_elem.get("src")  # type: ignore
-
-                    name_elem = navPoint.find("DAISY:navLabel/DAISY:text", Epub.NAMESPACE)
-                    name = name_elem.text  # type: ignore
-
-                elif version == "3.0":
-                    src_elem = navPoint
-                    src = src_elem.get("href")
-
-                    name = "".join(list(navPoint.itertext()))
-
-                else:
-                    raise NotImplementedError(f"Unsupported Epub version: {version}")
-
-                # TODO: cleanup
-                # src_id = src.split("#")
-
-                # try:
-                #     idx = contents.index(unquote(src_id[0]))
-                # except ValueError:
-                #     continue
-
-                # NOTE: skip empty label
-                if name is not None:
-                    toc_entries.append(
-                        TocEntry(
-                            label=name,
-                            # content_index=idx,
-                            # section=src_id[1] if len(src_id) == 2 else None,
-                            value=urljoin(self._root_dirpath, unquote(src)),  # type: ignore
-                        )
-                    )
-            return tuple(toc_entries)
-        except AttributeError as e:
-            raise e
+        return Epub._parse_toc(toc, self._version, self._root_dirpath)
 
     def get_raw_text(self, content_path: str | ET.Element) -> str:
         assert isinstance(content_path, str)
