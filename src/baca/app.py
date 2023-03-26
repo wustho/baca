@@ -6,10 +6,10 @@ from importlib import resources
 
 from textual import events
 from textual.app import App, ComposeResult
-from textual.reactive import reactive
 from textual.await_remove import AwaitRemove
 from textual.css.query import NoMatches
 from textual.dom import DOMNode
+from textual.reactive import reactive
 from textual.widget import Widget
 from textual.widgets import LoadingIndicator
 
@@ -26,11 +26,24 @@ from .utils.keys_parser import dispatch_key
 class Baca(App):
     CSS_PATH = str(resources.path("baca.resources", "style.css"))
 
+    reading_progress = reactive(0.0)
+
     def __init__(self, ebook_path: str):
         self.config = load_user_config()  # load first to resolve colors
         super().__init__()
         # TODO: move initializing ebook to self.load_everything()
         self.ebook_path = ebook_path
+
+    def on_mount(self):
+        def screen_watch_scroll_y_wrapper(old_watcher):
+            # TODO: why inst isn't passed as arg?
+            def new_watcher(old, new):
+                self.reading_progress = new
+                return old_watcher(old, new)
+
+            return new_watcher
+
+        setattr(self.screen, "watch_scroll_y", screen_watch_scroll_y_wrapper(getattr(self.screen, "watch_scroll_y")))
 
     def on_load(self, _: events.Load) -> None:
         assert self._loop is not None
@@ -95,7 +108,7 @@ class Baca(App):
                 KeyMap(keymaps.open_help, self.action_open_help),
                 KeyMap(keymaps.toggle_dark, self.action_toggle_dark),
                 KeyMap(keymaps.screenshot, lambda: self.save_screenshot(f"baca_{datetime.now().isoformat()}.svg")),
-                # KeyMap(["D"], self.debug),
+                KeyMap(["D"], self.debug),
                 # KeyMap(["D"], self.debug_async),
             ],
             event,
