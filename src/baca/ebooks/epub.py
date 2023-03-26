@@ -29,6 +29,9 @@ class Epub(Ebook):
         self._file: zipfile.ZipFile = zipfile.ZipFile(fileepub, "r")
         self._tempdir = tempfile.mkdtemp(prefix="baca-")
 
+    def get_path(self) -> str:
+        return self._path
+
     def get_tempdir(self) -> str:
         return self._tempdir
 

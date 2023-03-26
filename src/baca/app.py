@@ -6,6 +6,7 @@ from importlib import resources
 
 from textual import events
 from textual.app import App, ComposeResult
+from textual.reactive import reactive
 from textual.await_remove import AwaitRemove
 from textual.css.query import NoMatches
 from textual.dom import DOMNode
@@ -17,7 +18,7 @@ from .components.events import DoneLoading, FollowThis, OpenThisImage
 from .components.windows import Alert, DictDisplay, ToC
 from .config import load_user_config
 from .ebooks import Ebook, Epub
-from .models import KeyMap
+from .models import KeyMap, ReadingHistory
 from .utils.keys_parser import dispatch_key
 
 
@@ -37,6 +38,9 @@ class Baca(App):
 
     def load_everything(self):
         self.ebook = Epub(self.ebook_path)
+        self.ebook_state, _ = ReadingHistory.get_or_create(
+            filepath=self.ebook.get_path(), defaults=dict(reading_progress=0.0)
+        )
         content = Content(self.config, self.ebook)
         # NOTE: using a message instead of calling
         # the callback directly to make sure that the app is ready
@@ -164,6 +168,12 @@ class Baca(App):
             return super().run(*args, **kwargs)
         finally:
             self.ebook.cleanup()
+            meta = self.ebook.get_meta()
+            self.ebook_state.last_read = datetime.now()
+            self.ebook_state.title = meta.title
+            self.ebook_state.author = meta.creator
+            # self.ebook_state.reading_progress = pass
+            self.ebook_state.save()
 
     @property
     def toc_window(self) -> ToC | None:
