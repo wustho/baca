@@ -24,7 +24,7 @@ def parse_cli_args() -> argparse.Namespace:
         ),
     )
     # TODO:
-    # args_parser.add_argument("-r", "--history", action="store_true", help="print reading history")
+    args_parser.add_argument("-r", "--history", action="store_true", help="print reading history")
     args_parser.add_argument(
         "-v",
         "--version",

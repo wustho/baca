@@ -1,8 +1,8 @@
-import os
 import subprocess
 from dataclasses import asdict
 from datetime import datetime
 from importlib import resources
+from pathlib import Path
 
 from textual import events
 from textual.app import App, ComposeResult
@@ -21,7 +21,7 @@ from .utils.keys_parser import dispatch_key
 class Baca(App):
     CSS_PATH = str(resources.path("baca.resources", "style.css"))
 
-    def __init__(self, ebook_path: str):
+    def __init__(self, ebook_path: Path):
         self.config = load_user_config()  # load first to resolve colors
         super().__init__()
         # TODO: move initializing ebook to self.load_everything()
@@ -38,7 +38,7 @@ class Baca(App):
         self.ebook = Epub(self.ebook_path)
         content = Content(self.config, self.ebook)
         self.ebook_state, _ = ReadingHistory.get_or_create(
-            filepath=self.ebook.get_path(), defaults=dict(reading_progress=0.0)
+            filepath=str(self.ebook.get_path()), defaults=dict(reading_progress=0.0)
         )
         # NOTE: using a message instead of calling
         # the callback directly to make sure that the app is ready
@@ -159,7 +159,7 @@ class Baca(App):
 
     async def on_open_this_image(self, message: OpenThisImage) -> None:
         filename, bytestr = self.ebook.get_img_bytestr(message.value)
-        tmpfilepath = os.path.join(self.ebook.get_tempdir(), filename)
+        tmpfilepath = self.ebook.get_tempdir() / filename
         with open(tmpfilepath, "wb") as img_tmp:
             img_tmp.write(bytestr)
 

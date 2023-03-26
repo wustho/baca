@@ -1,17 +1,18 @@
 import xml.etree.ElementTree as ET
+from pathlib import Path
 from typing import Iterator
 
 from ..models import BookMetadata, Segment, TocEntry
 
 
 class Ebook:
-    def __init__(self, fileepub: str):
+    def __init__(self, fileepub: Path):
         raise NotImplementedError()
 
-    def get_tempdir(self) -> str:
+    def get_tempdir(self) -> Path:
         raise NotImplementedError()
 
-    def get_path(self) -> str:
+    def get_path(self) -> Path:
         raise NotImplementedError()
 
     def get_raw_text(self, content: str | ET.Element) -> str:

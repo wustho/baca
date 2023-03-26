@@ -5,6 +5,7 @@ import tempfile
 import xml.etree.ElementTree as ET
 import zipfile
 import zlib
+from pathlib import Path
 from typing import Iterator
 from urllib.parse import unquote, urljoin, urlparse
 
@@ -24,15 +25,15 @@ class Epub(Ebook):
         "DC": "http://purl.org/dc/elements/1.1/",
     }
 
-    def __init__(self, fileepub: str):
-        self._path: str = os.path.abspath(fileepub)
+    def __init__(self, fileepub: Path):
+        self._path = fileepub.resolve()
         self._file: zipfile.ZipFile = zipfile.ZipFile(fileepub, "r")
-        self._tempdir = tempfile.mkdtemp(prefix="baca-")
+        self._tempdir = Path(tempfile.mkdtemp(prefix="baca-"))
 
-    def get_path(self) -> str:
+    def get_path(self) -> Path:
         return self._path
 
-    def get_tempdir(self) -> str:
+    def get_tempdir(self) -> Path:
         return self._tempdir
 
     def get_meta(self) -> BookMetadata:
