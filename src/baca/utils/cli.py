@@ -9,7 +9,7 @@ from rich.table import Table
 from rich.text import Text
 
 from .. import __appname__, __version__
-from ..ebooks import Azw, Ebook, Epub
+from ..ebooks import Azw, Ebook, Epub, Mobi
 from .queries import (
     get_all_reading_history,
     get_best_match_from_history,
@@ -134,6 +134,8 @@ def get_ebook_class(ebook_path: Path) -> Type[Ebook]:
             ".epub3": Epub,
             ".azw": Azw,
             ".azw3": Azw,
+            # TODO: WIP
+            # ".mobi": Mobi
         }[ext]
     except KeyError:
         print_danger("format not supported!")
