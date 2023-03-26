@@ -15,6 +15,7 @@ from .components.events import DoneLoading, FollowThis, OpenThisImage, Screensho
 from .components.windows import Alert, DictDisplay, ToC
 from .config import load_user_config
 from .ebooks import Ebook
+from .exceptions import ImageViewerDoesNotExist
 from .models import KeyMap, ReadingHistory
 from .utils.keys_parser import dispatch_key
 
@@ -161,15 +162,21 @@ class Baca(App):
         self.call_after_refresh(self.toc_window.remove)  # type: ignore
 
     async def on_open_this_image(self, message: OpenThisImage) -> None:
-        filename, bytestr = self.ebook.get_img_bytestr(message.value)
-        tmpfilepath = self.ebook.get_tempdir() / filename
-        with open(tmpfilepath, "wb") as img_tmp:
-            img_tmp.write(bytestr)
-
         try:
-            subprocess.check_output(["xdg-open", tmpfilepath], stderr=subprocess.PIPE)
-        except (subprocess.CalledProcessError, FileNotFoundError) as e:
-            error_msg = e.stderr.decode() if isinstance(e, subprocess.CalledProcessError) else str(e)
+            if self.config.image_viewer is None:
+                raise ImageViewerDoesNotExist()
+
+            filename, bytestr = self.ebook.get_img_bytestr(message.value)
+            tmpfilepath = self.ebook.get_tempdir() / filename
+            with open(tmpfilepath, "wb") as img_tmp:
+                img_tmp.write(bytestr)
+
+            subprocess.check_output([self.config.image_viewer, tmpfilepath], stderr=subprocess.PIPE)
+        except (subprocess.CalledProcessError, FileNotFoundError, ImageViewerDoesNotExist) as e:
+            if isinstance(e, subprocess.CalledProcessError):
+                error_msg = e.stderr.decode() if isinstance(e, subprocess.CalledProcessError) else str(e)
+            else:
+                error_msg = str(e)
             await self.alert(f"Error opening an image: {error_msg}")
 
     async def on_screenshot(self, _: Screenshot) -> None:
