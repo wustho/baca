@@ -35,3 +35,7 @@ build-backend = "poetry.core.masonry.api"
 [tool.black]
 line-length = 120
 target-version = ['py310']
+exclude = "src/baca/tools/"
+
+[tool.isort]
+skip = "src/baca/tools/"
