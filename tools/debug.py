@@ -8,4 +8,5 @@ class Debug(Baca):
     def __init__(self):
         # file = Path("tmp/alice.azw3")
         file = Path("tmp/frankenstein.older.mobi")
+        # file = Path("tmp/frankenstein.mobi")
         super().__init__(file, get_ebook_class(file))

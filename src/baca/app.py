@@ -173,10 +173,7 @@ class Baca(App):
 
             subprocess.check_output([self.config.image_viewer, tmpfilepath], stderr=subprocess.PIPE)
         except (subprocess.CalledProcessError, FileNotFoundError, ImageViewerDoesNotExist) as e:
-            if isinstance(e, subprocess.CalledProcessError):
-                error_msg = e.stderr.decode() if isinstance(e, subprocess.CalledProcessError) else str(e)
-            else:
-                error_msg = str(e)
+            error_msg = e.stderr.decode() if isinstance(e, subprocess.CalledProcessError) else str(e)
             await self.alert(f"Error opening an image: {error_msg}")
 
     async def on_screenshot(self, _: Screenshot) -> None:
@@ -186,13 +183,13 @@ class Baca(App):
         try:
             return super().run(*args, **kwargs)
         finally:
-            self.ebook.cleanup()
             meta = self.ebook.get_meta()
             self.ebook_state.last_read = datetime.now()  # type: ignore
             self.ebook_state.title = meta.title  # type: ignore
             self.ebook_state.author = meta.creator  # type: ignore
             self.ebook_state.reading_progress = self.reading_progress  # type: ignore
             self.ebook_state.save()
+            self.ebook.cleanup()
 
     @property
     def toc_window(self) -> ToC | None:
