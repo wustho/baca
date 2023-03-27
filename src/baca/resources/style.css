@@ -58,11 +58,14 @@ SegmentWidget {
 }
 
 Section {
-  /* background: red; */
-  /* NOTE: cannot use 'visibility=hidden' and 'display=none' */
-  /* so use either height=0 or "opacity=0%" instead */
-  height: 0;
-  /* opacity: 0%; */
+  /* NOTE: this works but causing wrong index in initial toc */
+  /* ie. when saved in the top of chapter 7, it's restored as chapter 6 in TOC */
+  /* height: 0; */
+
+  /* NOTE: this works but look a little bit weird */
+  opacity: 0%;
+
+  /* NOTE: this doesn't work */
   /* visibility: hidden; */
   /* display: none; */
 }
