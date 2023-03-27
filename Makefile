@@ -13,6 +13,6 @@ console:
 debug:
 	@textual run --dev tools/debug.py:Debug
 
-release:
+publish:
 	# poetry build
 	poetry publish --build
