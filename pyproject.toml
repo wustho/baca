@@ -24,9 +24,9 @@ fuzzywuzzy = "^0.18.0"
 black = "^23.1.0"
 isort = "^5.12.0"
 ipython = "^8.11.0"
-debugpy = "^1.6.6"
 textual = {extras = ["dev"], version = "^0.16.0"}
 pytest = "^7.2.2"
+ipdb = "^0.13.13"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
