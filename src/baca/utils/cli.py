@@ -31,18 +31,18 @@ def format_file_size(pathstr: str) -> str:
 
 def print_reading_history() -> None:
     table = Table(title="Baca History")
-    table.add_column("#", style="cyan", no_wrap=True, justify="right")
-    table.add_column("Last Read", style="cyan", no_wrap=True)
-    table.add_column("Progress", style="cyan", no_wrap=True, justify="right")
-    table.add_column("Title", style="magenta", no_wrap=True)
-    table.add_column("Author", style="green", no_wrap=True)
-    table.add_column("Path", style="white", no_wrap=True)
-    table.add_column("Size", style="blue", no_wrap=True, justify="right")
+    table.add_column("#", style="cyan", no_wrap=False, justify="right")
+    table.add_column("Last Read", style="cyan", no_wrap=False)
+    table.add_column("Progress", style="cyan", no_wrap=False, justify="right")
+    table.add_column("Title", style="magenta", no_wrap=False)
+    table.add_column("Author", style="green", no_wrap=False)
+    table.add_column("Path", style="white", no_wrap=False)
+    table.add_column("Size", style="blue", no_wrap=False, justify="right")
 
     for n, rh in enumerate(get_all_reading_history()):
         table.add_row(
             str(n + 1),
-            f"{rh.last_read:%b %d, %Y %I:%M %p}",
+            f"{rh.last_read:%I:%M %p %b %d, %Y}",
             f"{round(rh.reading_progress*100, 2)}%",  # type: ignore
             rh.title,  # type: ignore
             rh.author,  # type: ignore
@@ -67,7 +67,7 @@ def parse_cli_args() -> argparse.Namespace:
           {prog} /path/to/ebook    read /path/to/ebook file
           {prog} 3                 read #3 file from reading history
           {prog} count monte       read file matching 'count monte'
-                                   from reading history
+                                 from reading history
         """
         ),
     )
@@ -135,7 +135,7 @@ def get_ebook_class(ebook_path: Path) -> Type[Ebook]:
             ".azw": Azw,
             ".azw3": Azw,
             # TODO: WIP
-            # ".mobi": Mobi
+            ".mobi": Mobi,
         }[ext]
     except KeyError:
         print_danger("format not supported!")
