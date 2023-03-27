@@ -24,7 +24,7 @@ def split_html_to_segments(
     """
     soup = BeautifulSoup(html_src, "html.parser", store_line_numbers=True)
     body = soup.find("body")
-    body_html = str(body)
+    body_html = str(body).replace("\n", "")
     body = BeautifulSoup(body_html, "html.parser")
 
     yield Segment(SegmentType.SECTION, section_name)
@@ -36,29 +36,20 @@ def split_html_to_segments(
     img_elems = body.find_all(["img", "image"])
     all_elems = sorted(section_elems + img_elems, key=lambda x: [x.sourceline, x.sourcepos])  # type: ignore
 
-    source_parts = body_html.splitlines()
-    startelem, startline, startpos = 0, 0, 0
-    while startelem <= len(all_elems):
-        if startelem < len(all_elems):
-            elem = all_elems[startelem]
-            part_str = "".join(source_parts[startline : elem.sourceline - 1]) + source_parts[elem.sourceline - 1][startpos : elem.sourcepos]  # type: ignore
-            startline, startpos = elem.sourceline - 1, elem.sourcepos  # type: ignore
+    start = 0
+    for elem in all_elems:
+        yield Segment(SegmentType.BODY, body_html[start : elem.sourcepos])
+        if elem.name in {"img", "image"}:  # type: ignore
+            img_src = elem.get("src") or elem.get("href")  # type: ignore
+            if img_src is not None:
+                # NOTE: urljoin should be able to handle relative path. ie urljoin("a", "b") == "b"
+                yield Segment(SegmentType.IMAGE, urljoin(section_name, img_src))
 
-            if elem.name in {"img", "image"}:  # type: ignore
-                img_src = elem.get("src") or elem.get("href")  # type: ignore
-                if img_src is not None:
-                    # NOTE: urljoin should be able to handle relative path. ie urljoin("a", "b") == "b"
-                    yield Segment(SegmentType.IMAGE, urljoin(section_name, img_src))
-
-            if ids_to_find is None or len(ids_to_find) > 0:
-                if elem.get("id") is not None:  # type: ignore
-                    yield Segment(SegmentType.SECTION, f"{section_name}#{elem.get('id')}")  # type: ignore
-
-        else:
-            part_str = "".join(source_parts[startline:])  # type: ignore
-
-        startelem += 1
-        yield Segment(SegmentType.BODY, part_str)
+        if ids_to_find is None or len(ids_to_find) > 0:
+            if elem.get("id") is not None:  # type: ignore
+                yield Segment(SegmentType.SECTION, f"{section_name}#{elem.get('id')}")  # type: ignore
+        start = elem.sourcepos
+    yield Segment(SegmentType.BODY, body_html[start:])
 
 
 def parse_html_to_segmented_md(
