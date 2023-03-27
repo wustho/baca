@@ -24,7 +24,7 @@ def split_html_to_segments(
     """
     soup = BeautifulSoup(html_src, "html.parser", store_line_numbers=True)
     body = soup.find("body")
-    body_html = str(body).replace("\n", "")
+    body_html = str(body).replace("\n", " ")
     body = BeautifulSoup(body_html, "html.parser")
 
     yield Segment(SegmentType.SECTION, section_name)

@@ -14,6 +14,7 @@ But with a sleek and contemporary appearance that's sure to captivate you!
 - Clean & modern looks
 - Lets you open images
 - Text justification
+- Dark & light colorscheme
 
 ## Requirements
 
@@ -59,7 +60,47 @@ Yeah, I know you want to use keyboard for this, me too, but bear with this for n
 
 ## Configurations
 
-Configuration file available at `~/.config/baca/config.ini`.
+Configuration file available at `~/.config/baca/config.ini`. Here is the default:
+
+```ini
+[General]
+# pick your favorite image viewer
+PreferredImageViewer = auto
+
+# int or css value string like 90%
+MaxTextWidth = 80
+
+# 'justify', 'center', 'left', 'right'
+TextJustification = justify
+
+# currently using pretty=yes is slow
+# and taking huge amount of memory
+Pretty = no
+
+[Color Dark]
+Background = #1e1e1e
+Foreground = #f5f5f5
+Accent = #0178d4
+
+[Color Light]
+Background = #f5f5f5
+Foreground = #1e1e1e
+Accent = #0178d4
+
+[Keymaps]
+ToggleLightDark = c
+ScrollDown = down,j
+ScrollUp = up,k
+PageDown = ctrl+f,pagedown
+PageUp = ctrl+b,pageup
+Home = home,g
+End = end,G
+OpenToc = tab
+OpenMetadata = M
+OpenHelp = question_mark
+CloseOrQuit = q,escape
+Screenshot = f12
+```
 
 ## Current Limitations
 

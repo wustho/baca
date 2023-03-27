@@ -3,7 +3,8 @@ from baca.utils.html_parser import split_html_to_segments, parse_html_to_segment
 HTML_TEST = """
 <html><head><title>The Dormouse's story</title></head>
 <body>
-<p class="title"><b>The Dormouse's story</b></p>
+<p class="title"><b>The Dormouse's
+story</b></p>
 
 <p class="story">Once upon a time there were three little sisters; and their names were
 <a href="http://example.com/elsie" class="sister" id="link1">Elsie</a>,
