@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Type
 
 from textual import events
+from textual.actions import SkipAction
 from textual.app import App, ComposeResult
 from textual.css.query import NoMatches
 from textual.widgets import LoadingIndicator
@@ -13,7 +14,7 @@ from textual.widgets import LoadingIndicator
 from .components.contents import Content
 from .components.events import DoneLoading, FollowThis, OpenThisImage, Screenshot
 from .components.windows import Alert, DictDisplay, ToC
-from .config import load_user_config
+from .config import load_config
 from .ebooks import Ebook
 from .exceptions import ImageViewerDoesNotExist
 from .models import KeyMap, ReadingHistory
@@ -25,7 +26,7 @@ class Baca(App):
 
     def __init__(self, ebook_path: Path, ebook_class: Type[Ebook]):
         # load first to resolve css variables
-        self.config = load_user_config()
+        self.config = load_config()
         super().__init__()
         self.ebook_path = ebook_path
         self.ebook_class = ebook_class
@@ -105,8 +106,10 @@ class Baca(App):
                 KeyMap(keymaps.close, self.action_quit),
                 KeyMap(keymaps.scroll_down, self.screen.action_scroll_down),
                 KeyMap(keymaps.scroll_up, self.screen.action_scroll_up),
-                KeyMap(keymaps.page_up, self.screen.action_page_up),
-                KeyMap(keymaps.page_down, self.screen.action_page_down),
+                # KeyMap(keymaps.page_up, self.screen.action_page_up),
+                # KeyMap(keymaps.page_down, self.screen.action_page_down),
+                KeyMap(keymaps.page_up, self.action_page_up),
+                KeyMap(keymaps.page_down, self.action_page_down),
                 KeyMap(keymaps.home, self.screen.action_scroll_home),
                 KeyMap(keymaps.end, self.screen.action_scroll_end),
                 KeyMap(keymaps.open_toc, self.action_open_toc),
@@ -133,6 +136,16 @@ class Baca(App):
                 config=self.config, id="metadata", title="Metadata", data=asdict(self.ebook.get_meta())
             )
             await self.mount(metadata_window)
+
+    def action_page_down(self) -> None:
+        if not self.screen.allow_vertical_scroll:
+            raise SkipAction()
+        self.screen.scroll_page_down(duration=self.config.page_scroll_duration)
+
+    def action_page_up(self) -> None:
+        if not self.screen.allow_vertical_scroll:
+            raise SkipAction()
+        self.screen.scroll_page_up(duration=self.config.page_scroll_duration)
 
     async def action_open_help(self) -> None:
         if self.help_window is None:

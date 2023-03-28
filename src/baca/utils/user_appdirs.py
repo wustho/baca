@@ -1,5 +1,4 @@
 import os
-import shutil
 from importlib import resources
 from pathlib import Path
 
@@ -25,6 +24,8 @@ def retrieve_user_config_file() -> Path:
 
     configfile = configdir / "config.ini"
     if not os.path.isfile(configfile):
-        shutil.copyfile(str(DEFAULT_CONFIG), str(configfile))
+        # shutil.copyfile(str(DEFAULT_CONFIG), str(configfile))
+        with open(DEFAULT_CONFIG, "r", encoding="utf-8") as src, open(configfile, "w", encoding="utf-8") as dest:
+            dest.write(src.read())
 
     return configfile

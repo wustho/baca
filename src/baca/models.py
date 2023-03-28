@@ -74,6 +74,7 @@ class Config:
     max_text_width: str
     text_justification: Literal["default", "center", "full", "right", "left"]
     pretty: bool
+    page_scroll_duration: float
     dark: Color
     light: Color
     keymaps: Keymaps
