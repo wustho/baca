@@ -1,9 +1,10 @@
 [tool.poetry]
 name = "baca"
-version = "0.1.1"
+version = "0.1.2"
 description = "TUI Ebook Reader"
 authors = ["Benawi Adha <benawiadha@gmail.com>"]
 license = "GPL-3.0"
+readme = "README.md"
 packages = [
     { include = "baca", from = "src" }
 ]
@@ -31,6 +32,9 @@ ipdb = "^0.13.13"
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.pyright]
+exclude = ["src/baca/tools"]
 
 [tool.black]
 line-length = 120

@@ -1,5 +1,3 @@
-from dataclasses import asdict
-
 from textual import events
 from textual.app import ComposeResult
 from textual.widget import Widget
@@ -70,7 +68,7 @@ class DictDisplay(Window):
         yield Table(headers=["key", "value"], rows=[(k, v) for k, v in self.data.items()])
 
 
-class FollowButton(Widget):
+class NavPoint(Widget):
     can_focus = True
 
     def __init__(self, config: Config, label: str, value: str):
@@ -104,12 +102,12 @@ class ToC(Window):
         super().__init__(config)
         self.entries = entries
         self.initial_focused_id = initial_focused_id
-        self.entry_widgets = [FollowButton(self.config, entry.label, entry.value) for entry in self.entries]
+        self.entry_widgets = [NavPoint(self.config, entry.label, entry.value) for entry in self.entries]
         keymaps = config.keymaps
         self.keymaps = [
             KeyMap(keymaps.close + config.keymaps.open_toc, self.action_close),
-            KeyMap(keymaps.scroll_down, self.action_focus_next_child),
-            KeyMap(keymaps.scroll_up, self.action_focus_prev_child),
+            KeyMap(keymaps.scroll_down, lambda: self.action_shift_focus(1)),
+            KeyMap(keymaps.scroll_up, lambda: self.action_shift_focus(-1)),
             KeyMap(keymaps.home, lambda: self.entry_widgets[0].focus()),
             KeyMap(keymaps.end, lambda: self.entry_widgets[-1].focus()),
             KeyMap(keymaps.screenshot, lambda: self.post_message(Screenshot())),
@@ -128,30 +126,13 @@ class ToC(Window):
                         w.scroll_visible(top=True)
                         break
 
-    # TODO: simplify
-    def action_focus_next_child(self) -> None:
+    def action_shift_focus(self, n: int) -> None:
         try:
-            next(w for w in self.entry_widgets if w.has_focus)
+            current_focused_idx = next(n for n, e in enumerate(self.entry_widgets) if e.has_focus)
+            next_focused_idx = (current_focused_idx + n) % len(self.entry_widgets)
         except StopIteration:
-            self.entry_widgets[0].focus()
-            return
-
-        for idx, widget in enumerate(self.entry_widgets):
-            if self.entry_widgets[idx - 1].has_focus:
-                widget.focus()
-
-    # TODO: simplify
-    def action_focus_prev_child(self) -> None:
-        try:
-            next(w for w in self.entry_widgets if w.has_focus)
-        except StopIteration:
-            self.entry_widgets[-1].focus()
-            return
-
-        children = list(reversed(self.entry_widgets))
-        for idx, widget in enumerate(children):
-            if children[idx - 1].has_focus:
-                widget.focus()
+            next_focused_idx = 0 if n >= 0 else -1
+        self.entry_widgets[next_focused_idx].focus()
 
     def compose(self) -> ComposeResult:
         yield from self.entry_widgets

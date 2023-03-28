@@ -118,17 +118,17 @@ Alert {
   scrollbar-color: red;
 }
 
-FollowButton {
+NavPoint {
   height: auto;
   border: tall grey;
   margin: 0 1 1 0;
   padding: 0 5;
 }
 
-.-dark-mode FollowButton:focus {
+.-dark-mode NavPoint:focus {
   background: $dark-accent;
 }
 
-.-light-mode FollowButton:focus {
+.-light-mode NavPoint:focus {
   background: $light-accent;
 }

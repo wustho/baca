@@ -41,7 +41,6 @@ class Migration:
 
 
 class SegmentType(Enum):
-    SECTION = "section"
     IMAGE = "image"
     BODY = "body"
 
@@ -103,6 +102,7 @@ class TocEntry:
 class Segment:
     type: SegmentType
     content: str
+    nav_point: str | None
 
 
 @dataclass(frozen=True)

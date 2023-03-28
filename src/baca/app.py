@@ -114,7 +114,8 @@ class Baca(App):
                 KeyMap(keymaps.open_help, self.action_open_help),
                 KeyMap(keymaps.toggle_dark, self.action_toggle_dark),
                 KeyMap(keymaps.screenshot, lambda: self.post_message(Screenshot())),
-                # KeyMap(["D"], lambda: self.log()),
+                # TODO: search feature
+                # KeyMap(["D"], lambda: self.log("baca--->>>", self.content._segments[3]._render_cache.lines[1].text)),
             ],
             event,
         )
@@ -146,9 +147,12 @@ class Baca(App):
                 return await self.alert("No content navigations for this ebook.")
 
             initial_focused_id: str | None = None
-            for s in self.content.sections:
+            for s in self.content.get_navigables():
+                # TODO: reevaluate!
+                # if self.screen.scroll_y >= s.virtual_region.y - 1
+                # workaround for initial toc issue on restore reading pos
                 if self.screen.scroll_y >= s.virtual_region.y:
-                    initial_focused_id = s.value
+                    initial_focused_id = s.nav_point
                 else:
                     break
 
@@ -157,7 +161,7 @@ class Baca(App):
             await self.mount(toc)
 
     async def on_follow_this(self, message: FollowThis) -> None:
-        self.content.scroll_to_section(message.value)
+        self.content.scroll_to_section(message.nav_point)
         # NOTE: remove after refresh so the event get handled
         self.call_after_refresh(self.toc_window.remove)  # type: ignore
 

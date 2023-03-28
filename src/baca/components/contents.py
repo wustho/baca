@@ -27,53 +27,46 @@ class Table(DataTable):
 class SegmentWidget(Widget):
     can_focus = False
 
-    def __init__(self, config: Config, id: str | None = None):
-        super().__init__(id=id)
+    def __init__(self, config: Config, nav_point: str | None):
+        super().__init__()
         self.config = config
+        self.nav_point = nav_point
 
 
 class Body(SegmentWidget):
-    def __init__(self, config: Config, src: str):
-        super().__init__(config)
-        self._src = src
+    def __init__(self, config: Config, content: str, nav_point: str | None = None):
+        super().__init__(config, nav_point)
+        self.content = content
 
     def render(self):
         # NOTE: Markdwon rich isn't widget, so we cannot set using css
         # hence this translation workaround
         return Markdown(
-            self._src, justify=dict(center="center", left="left", right="right", justify="full")[self.styles.text_align]  # type: ignore
+            self.content, justify=dict(center="center", left="left", right="right", justify="full")[self.styles.text_align]  # type: ignore
         )
 
 
 class Image(SegmentWidget):
-    def __init__(self, config: Config, src: str):
-        super().__init__(config)
+    def __init__(self, config: Config, src: str, nav_point: str | None = None):
+        super().__init__(config, nav_point)
         # TODO: maybe put it in Widget.id?
-        self._src = src
+        self.content = src
 
     def render(self):
-        return Text("🖼️  IMAGE", justify="center")
+        return Text("IMAGE", justify="center")
 
     # TODO: "Click ot Open" on mouse hover
     # def on_mouse_move(self, _: events.MouseMove) -> None:
     #     self.styles.background = "red"
 
     async def on_click(self) -> None:
-        self.post_message(OpenThisImage(self._src))
+        self.post_message(OpenThisImage(self.content))
 
 
 class PrettyBody(PrettyMarkdown):
-    def __init__(self, config: Config, value: str):
+    def __init__(self, config: Config, value: str, nav_point: str | None = None):
         super().__init__(value)
-
-
-class Section(SegmentWidget):
-    def __init__(self, config: Config, value: str):
-        super().__init__(config=config)
-        self.value = value
-
-    def render(self):
-        return self.value
+        self.nav_point = nav_point
 
 
 class Content(Widget):
@@ -83,24 +76,21 @@ class Content(Widget):
         super().__init__()
         self.config = config
 
-        self._segment_widgets: list[SegmentWidget | PrettyMarkdown] = []
+        self._segments: list[SegmentWidget | PrettyBody] = []
         for segment in ebook.iter_parsed_contents():
-            if segment.type == SegmentType.SECTION:
-                component_cls = Section
-            elif segment.type == SegmentType.BODY:
+            if segment.type == SegmentType.BODY:
                 component_cls = Body if not config.pretty else PrettyBody
             else:
                 component_cls = Image
-            self._segment_widgets.append(component_cls(self.config, segment.content))
+            self._segments.append(component_cls(self.config, segment.content, segment.nav_point))
 
-    @property
-    def sections(self) -> list[Section]:
-        return [comp for comp in self._segment_widgets if isinstance(comp, Section)]
+    def get_navigables(self):
+        return [s for s in self._segments if s.nav_point is not None]
 
-    def scroll_to_section(self, id: str) -> None:
+    def scroll_to_section(self, nav_point: str) -> None:
         # TODO: add attr TocEntry.uuid so we can query("#{uuid}")
-        for s in self.sections:
-            if s.value == id:
+        for s in self.get_navigables():
+            if s.nav_point == nav_point:
                 s.scroll_visible(top=True)
                 break
 
@@ -115,7 +105,7 @@ class Content(Widget):
         return ""
 
     def compose(self) -> ComposeResult:
-        yield from iter(self._segment_widgets)
+        yield from iter(self._segments)
 
     def scroll_to_widget(self, *args, **kwargs) -> bool:
         return self.screen.scroll_to_widget(*args, **kwargs)

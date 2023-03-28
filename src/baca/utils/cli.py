@@ -134,7 +134,6 @@ def get_ebook_class(ebook_path: Path) -> Type[Ebook]:
             ".epub3": Epub,
             ".azw": Azw,
             ".azw3": Azw,
-            # TODO: WIP
             ".mobi": Mobi,
         }[ext]
     except KeyError:

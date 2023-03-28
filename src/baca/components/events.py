@@ -8,9 +8,9 @@ class DoneLoading(Message):
 
 
 class FollowThis(Message):
-    def __init__(self, value: str):
+    def __init__(self, nav_point: str):
         super().__init__()
-        self.value = value
+        self.nav_point = nav_point
 
 
 class OpenThisImage(Message):

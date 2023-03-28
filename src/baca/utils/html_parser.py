@@ -27,29 +27,30 @@ def split_html_to_segments(
     body_html = str(body).replace("\n", " ")
     body = BeautifulSoup(body_html, "html.parser")
 
-    yield Segment(SegmentType.SECTION, section_name)
-
-    if ids_to_find is not None and len(ids_to_find) == 0:
-        section_elems = []
-    else:
+    find_nav_points = ids_to_find is None or len(ids_to_find) > 0
+    if find_nav_points:
         section_elems = body.find_all(id=True if ids_to_find is None else ids_to_find)
+    else:
+        section_elems = []
     img_elems = body.find_all(["img", "image"])
     all_elems = sorted(section_elems + img_elems, key=lambda x: [x.sourceline, x.sourcepos])  # type: ignore
 
     start = 0
+    nav_point = section_name
     for elem in all_elems:
-        yield Segment(SegmentType.BODY, body_html[start : elem.sourcepos])
+        yield Segment(type=SegmentType.BODY, content=body_html[start : elem.sourcepos], nav_point=nav_point)  # type: ignore
+
+        start = elem.sourcepos
+        fragment = elem.get("id")
+        nav_point = f"{section_name}#{fragment}" if find_nav_points and fragment is not None else None
+
         if elem.name in {"img", "image"}:  # type: ignore
             img_src = elem.get("src") or elem.get("href")  # type: ignore
             if img_src is not None:
                 # NOTE: urljoin should be able to handle relative path. ie urljoin("a", "b") == "b"
-                yield Segment(SegmentType.IMAGE, urljoin(section_name, img_src))
+                yield Segment(type=SegmentType.IMAGE, content=urljoin(section_name, img_src), nav_point=nav_point)
 
-        if ids_to_find is None or len(ids_to_find) > 0:
-            if elem.get("id") is not None:  # type: ignore
-                yield Segment(SegmentType.SECTION, f"{section_name}#{elem.get('id')}")  # type: ignore
-        start = elem.sourcepos
-    yield Segment(SegmentType.BODY, body_html[start:])
+    yield Segment(type=SegmentType.BODY, content=body_html[start:], nav_point=nav_point)
 
 
 def parse_html_to_segmented_md(
@@ -57,6 +58,9 @@ def parse_html_to_segmented_md(
 ) -> Iterator[Segment]:
     for segment in split_html_to_segments(html_src, section_name, ids_to_find=ids_to_find):
         yield Segment(
-            segment.type,
-            MarkdownConverter().convert(segment.content) if segment.type == SegmentType.BODY else segment.content,
+            type=segment.type,
+            content=MarkdownConverter().convert(segment.content)
+            if segment.type == SegmentType.BODY
+            else segment.content,
+            nav_point=segment.nav_point,
         )
