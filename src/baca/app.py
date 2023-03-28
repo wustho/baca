@@ -150,7 +150,7 @@ class Baca(App):
     async def action_open_help(self) -> None:
         if self.help_window is None:
             keymap_data = {k.replace("_", " ").title(): ",".join(v) for k, v in asdict(self.config.keymaps).items()}
-            help_window = DictDisplay(config=self.config, id="help", title="Metadata", data=keymap_data)
+            help_window = DictDisplay(config=self.config, id="help", title="Keymaps", data=keymap_data)
             await self.mount(help_window)
 
     async def action_open_toc(self) -> None:
