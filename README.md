@@ -67,7 +67,8 @@ Configuration file available at `~/.config/baca/config.ini`. Here is the default
 # pick your favorite image viewer
 PreferredImageViewer = auto
 
-# int or css value string like 90%
+# int or css value string like 90%%
+# (escape percent with double percent %%)
 MaxTextWidth = 80
 
 # 'justify', 'center', 'left', 'right'
@@ -93,8 +94,8 @@ Accent = #0178d4
 ToggleLightDark = c
 ScrollDown = down,j
 ScrollUp = up,k
-PageDown = ctrl+f,pagedown
-PageUp = ctrl+b,pageup
+PageDown = ctrl+f,pagedown,l,space
+PageUp = ctrl+b,pageup,h
 Home = home,g
 End = end,G
 OpenToc = tab
