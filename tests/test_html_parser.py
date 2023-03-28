@@ -44,7 +44,7 @@ def test_html_splitters():
     segment = next(segments_iterator)
     assert segment.type == SegmentType.IMAGE
     assert segment.content == "img_girl.jpg"
-    assert segment.nav_point == None
+    assert segment.nav_point is None
 
     segment = next(segments_iterator)
     assert segment.type == SegmentType.BODY
@@ -52,4 +52,4 @@ def test_html_splitters():
         segment.content
         == '<img alt="Girl in a jacket" height="600" src="img_girl.jpg" width="500"/> <p class="story">...</p> </body>'
     )
-    assert segment.nav_point == None
+    assert segment.nav_point is None
