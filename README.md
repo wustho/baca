@@ -77,6 +77,8 @@ TextJustification = justify
 # and taking huge amount of memory
 Pretty = no
 
+PageScrollDuration = 0.2
+
 [Color Dark]
 Background = #1e1e1e
 Foreground = #f5f5f5
