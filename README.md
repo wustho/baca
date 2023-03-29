@@ -60,7 +60,9 @@ Yeah, I know you want to use keyboard for this, me too, but bear with this for n
 
 ## Configurations
 
-Configuration file available at `~/.config/baca/config.ini`. Here is the default:
+![pretty_yes_no_cap](https://user-images.githubusercontent.com/43810055/228417623-ac78fb84-0ee0-4930-a843-752ef693822d.png)
+
+Configuration file available at `~/.config/baca/config.ini` for linux users. Here is the default:
 
 ```ini
 [General]
@@ -75,7 +77,8 @@ MaxTextWidth = 80
 TextJustification = justify
 
 # currently using pretty=yes is slow
-# and taking huge amount of memory
+# and taking huge amount of memory (more than GUI reader)
+# but it can render table pretty well
 Pretty = no
 
 PageScrollDuration = 0.2

@@ -6,22 +6,16 @@ from typing import Type
 
 from rich.console import Console
 from rich.table import Table
-from rich.text import Text
 
 from .. import __appname__, __version__
 from ..ebooks import Azw, Ebook, Epub, Mobi
+from ..exceptions import EbookNotFound, FormatNotSupported
 from .queries import (
     get_all_reading_history,
     get_best_match_from_history,
     get_last_read_ebook,
     get_nth_file_from_history,
 )
-
-
-def print_danger_and_exit(message: str):
-    console = Console()
-    console.print(Text(f"BacaError: {message}", style="bold red"))
-    sys.exit(-1)
 
 
 def format_file_size(pathstr: str) -> str:
@@ -55,7 +49,7 @@ def print_reading_history() -> None:
 
 def parse_cli_args() -> argparse.Namespace:
     prog = __appname__
-    positional_arg_help_str = "[PATH | # | PATTERN | URL]"
+    positional_arg_help_str = "[PATH | # | PATTERN ]"
     args_parser = argparse.ArgumentParser(
         prog=prog,
         usage=f"%(prog)s [-h] [-r] [-v] {positional_arg_help_str}",
@@ -84,7 +78,7 @@ def parse_cli_args() -> argparse.Namespace:
         action="store",
         nargs="*",
         metavar=positional_arg_help_str,
-        help="ebook path, history number, pattern or URL",
+        help="ebook path, history number or pattern",
     )
     return args_parser.parse_args()
 
@@ -100,7 +94,7 @@ def find_file() -> Path:
         if last_read is not None:
             return last_read
         else:
-            print_danger_and_exit("found no last read ebook file!")
+            raise EbookNotFound("found no last read ebook file!")
 
     elif len(args.ebook) == 1:
         arg = args.ebook[0]
@@ -109,7 +103,8 @@ def find_file() -> Path:
             ebook_path = get_nth_file_from_history(nth)
             if ebook_path is None:
                 print_reading_history()
-                print_danger_and_exit(f"#{nth} file not found from history!")
+                raise EbookNotFound(f"#{nth} file not found from history!")
+
             else:
                 return ebook_path
 
@@ -121,7 +116,7 @@ def find_file() -> Path:
     ebook_path = get_best_match_from_history(pattern)
     if ebook_path is None:
         print_reading_history()
-        print_danger_and_exit("found no matching ebook from history!")
+        raise EbookNotFound("found no matching ebook from history!")
     else:
         return ebook_path
 
@@ -137,4 +132,4 @@ def get_ebook_class(ebook_path: Path) -> Type[Ebook]:
             ".mobi": Mobi,
         }[ext]
     except KeyError:
-        print_danger_and_exit("format not supported!")
+        raise FormatNotSupported("format not supported!")

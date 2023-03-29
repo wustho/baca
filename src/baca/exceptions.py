@@ -8,13 +8,26 @@ class TableDoesNotExist(Exception):
     pass
 
 
-class ImageViewerDoesNotExist(Exception):
+class BacaException(Exception):
+    def __init__(self, message: str):
+        super().__init__(f"BacaError: {message}")
+
+
+class EbookNotFound(BacaException):
+    pass
+
+
+class FormatNotSupported(BacaException):
+    pass
+
+
+class ImageViewerDoesNotExist(BacaException):
     def __init__(self):
         super().__init__(
             dedent(
-                f"""
-                Error: Image viewer is missing on your system or isn't configured properly.
-                Please make sure any of this image viewer is installed on your systems:
+                f"""\
+                Image viewer is missing on your system or isn't configured properly.
+                Please make sure any of these image viewers is installed on your systems:
                     {', '.join(VIEWERS)}.
 
                 Or configure your preferred image viewer in: {retrieve_user_config_file()}.
