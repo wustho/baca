@@ -1,12 +1,12 @@
 import os
-from importlib import resources
 from pathlib import Path
 
 import appdirs
 
 from .. import __appname__
+from .app_resources import get_resource_file
 
-DEFAULT_CONFIG = resources.path("baca.resources", "config.ini")
+DEFAULT_CONFIG = get_resource_file("config.ini")
 
 
 def retrieve_user_cache_dbfile() -> Path:

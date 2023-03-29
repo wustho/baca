@@ -16,3 +16,6 @@ debug:
 publish:
 	# poetry build
 	poetry publish --build
+
+typecheck:
+	pyright src

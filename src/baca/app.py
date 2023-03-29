@@ -1,7 +1,6 @@
 import subprocess
 from dataclasses import asdict
 from datetime import datetime
-from importlib import resources
 from pathlib import Path
 from typing import Type
 
@@ -18,11 +17,12 @@ from .config import load_config
 from .ebooks import Ebook
 from .exceptions import ImageViewerDoesNotExist
 from .models import KeyMap, ReadingHistory
+from .utils.app_resources import get_resource_file
 from .utils.keys_parser import dispatch_key
 
 
 class Baca(App):
-    CSS_PATH = str(resources.path("baca.resources", "style.css"))
+    CSS_PATH = str(get_resource_file("style.css"))
 
     def __init__(self, ebook_path: Path, ebook_class: Type[Ebook]):
         # load first to resolve css variables

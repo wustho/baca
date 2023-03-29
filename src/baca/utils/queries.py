@@ -17,13 +17,14 @@ def get_all_reading_history() -> Iterator[ReadingHistory]:
 
 def get_best_match_from_history(pattern: str) -> Path | None:
     with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
         from fuzzywuzzy import fuzz
 
-        match_ratios = [
-            (rh.filepath, fuzz.ratio(tomatch, pattern))
-            for rh in get_all_reading_history()
-            for tomatch in [rh.filepath, f"{rh.title} {rh.author}"]
-        ]
+    match_ratios = [
+        (rh.filepath, fuzz.ratio(tomatch, pattern))
+        for rh in get_all_reading_history()
+        for tomatch in [rh.filepath, f"{rh.title} {rh.author}"]
+    ]
     matches = [(Path(path), ratio) for path, ratio in match_ratios if ratio > MIN_FUZZY_MATCH_RATIO]  # type: ignore
     return None if len(matches) == 0 else sorted(matches, key=lambda x: -x[1])[0][0]
 

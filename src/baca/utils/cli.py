@@ -18,7 +18,7 @@ from .queries import (
 )
 
 
-def print_danger(message: str):
+def print_danger_and_exit(message: str):
     console = Console()
     console.print(Text(f"BacaError: {message}", style="bold red"))
     sys.exit(-1)
@@ -100,7 +100,7 @@ def find_file() -> Path:
         if last_read is not None:
             return last_read
         else:
-            print_danger("found no last read ebook file!")
+            print_danger_and_exit("found no last read ebook file!")
 
     elif len(args.ebook) == 1:
         arg = args.ebook[0]
@@ -109,7 +109,7 @@ def find_file() -> Path:
             ebook_path = get_nth_file_from_history(nth)
             if ebook_path is None:
                 print_reading_history()
-                print_danger(f"#{nth} file not found from history!")
+                print_danger_and_exit(f"#{nth} file not found from history!")
             else:
                 return ebook_path
 
@@ -121,7 +121,7 @@ def find_file() -> Path:
     ebook_path = get_best_match_from_history(pattern)
     if ebook_path is None:
         print_reading_history()
-        print_danger("found no matching ebook from history!")
+        print_danger_and_exit("found no matching ebook from history!")
     else:
         return ebook_path
 
@@ -137,4 +137,4 @@ def get_ebook_class(ebook_path: Path) -> Type[Ebook]:
             ".mobi": Mobi,
         }[ext]
     except KeyError:
-        print_danger("format not supported!")
+        print_danger_and_exit("format not supported!")
