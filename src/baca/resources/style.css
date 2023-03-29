@@ -26,6 +26,11 @@ Screen {
   layers: content windows;
 }
 
+LoadingIndicator {
+  layer: windows;
+}
+
+
 /* contents */
 
 Table {
