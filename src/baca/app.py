@@ -65,8 +65,8 @@ class Baca(App):
         def init_render() -> None:
             # restore reading progress
             # make sure to call this after refresh so the screen.max_scroll_y != 0
-            historic_y = self.ebook_state.reading_progress * self.screen.max_scroll_y
-            self.screen.scroll_to(None, historic_y, speed=0, animate=False)  # type: ignore
+            self.reading_progress = self.ebook_state.reading_progress * self.screen.max_scroll_y
+            self.screen.scroll_to(None, self.reading_progress, speed=0, animate=False)  # type: ignore
 
             self.get_widget_by_id("startup-loader", LoadingIndicator).remove()
 
@@ -119,9 +119,9 @@ class Baca(App):
                 KeyMap(keymaps.open_help, self.action_open_help),
                 KeyMap(keymaps.toggle_dark, self.action_toggle_dark),
                 KeyMap(keymaps.screenshot, lambda: self.post_message(Screenshot())),
+                KeyMap(["slash"], self.action_search_next),
                 # TODO: search feature
                 KeyMap(["D"], lambda: self.log("baca--->>>", self.screen.parent.size)),
-                KeyMap(["slash"], self.action_search_next),
             ],
             event,
         )
@@ -153,13 +153,8 @@ class Baca(App):
     async def action_search_next(self) -> None:
         if self.search_mode is None:
             self.search_mode = SearchMode("and", Coordinate(-1, 0))
-        else:
-            new_coord = await self.content.search_next(self.search_mode.pattern_str, self.search_mode.current_coord)
-            self.search_mode = SearchMode("and", new_coord)
-            # try:
-            #     self.screen.scroll_to_widget(self.content.query_one("SearchWidget"), top=True)
-            # except:
-            #     pass
+        new_coord = await self.content.search_next(self.search_mode.pattern_str, self.search_mode.current_coord)
+        self.search_mode = SearchMode("and", new_coord)
 
     async def action_open_help(self) -> None:
         if self.help_window is None:
