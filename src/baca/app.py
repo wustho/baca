@@ -120,15 +120,7 @@ class Baca(App):
                 KeyMap(keymaps.toggle_dark, self.action_toggle_dark),
                 KeyMap(keymaps.screenshot, lambda: self.post_message(Screenshot())),
                 # TODO: search feature
-                # KeyMap(["D"], lambda: self.log("baca--->>>", self.content._segments[3]._render_cache.lines[1].text)),
-                # KeyMap(["D"], lambda: self.log("baca--->>>", self.content._segments[3].render_line(3)._segments)),
-                # KeyMap(["D"], lambda: self.log("baca--->>>", self.content._segments[3].virtual_size)),
-                # KeyMap(["D"], lambda: self.log("baca--->>>", self.content.get_text_at(3)))
-                # KeyMap(["D"], lambda: self.log("baca--->>>", self.content.size.width))
-                # KeyMap(["D"], lambda: self.log("baca--->>>", [ i.text for i in self.content._segments[1].render_lines(Region(0, 0, 80, 3))])),
-                # KeyMap(["D"], lambda: self.screen.scroll_to(0, 1001)),
-                # KeyMap(["D"], lambda: self.log("baca--->>>", repr(self.content._render_cache)))
-                # KeyMap(["D"], lambda: self.log("baca--->>>", self.content._segments[3])),
+                KeyMap(["D"], lambda: self.log("baca--->>>", self.screen.parent.size)),
                 KeyMap(["slash"], self.action_search_next),
             ],
             event,
