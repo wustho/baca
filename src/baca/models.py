@@ -64,6 +64,11 @@ class Keymaps:
     open_toc: list[str]
     open_metadata: list[str]
     open_help: list[str]
+    search_forward: list[str]
+    search_backward: list[str]
+    next_match: list[str]
+    prev_match: list[str]
+    confirm: list[str]
     close: list[str]
     screenshot: list[str]
 

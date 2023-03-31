@@ -1,12 +1,58 @@
+from typing import Type
+
 from textual import events
 from textual.app import ComposeResult
+from textual.message import Message
 from textual.widget import Widget
-from textual.widgets import Static
+from textual.widgets import Input, Static
 
 from ..models import Config, KeyMap, TocEntry
 from ..utils.keys_parser import dispatch_key
 from .contents import Table
-from .events import FollowThis, Screenshot
+from .events import FollowThis, Screenshot, SearchSubmitted
+
+
+class SearchInputPrompt(Input):
+    can_focus = True
+
+    def __init__(self, forward: bool):
+        super().__init__()
+        self.forward = forward
+        self.border_title = f"Search {'Forward' if forward else 'Backward'}"
+
+    def on_mount(self):
+        self.styles.layer = "windows"
+        self.styles.dock = "bottom"  # type: ignore
+        self.styles.border_title_align = "center"
+        self.styles.border = ("double", "blue")
+        self.focus()
+
+    async def on_key(self, event: events.Key) -> None:
+        keymaps = [
+            KeyMap(["backspace", "ctrl+h"], self.action_delete_left),
+            KeyMap(["home", "ctrl+a"], self.action_home),
+            KeyMap(["end", "ctrl+e"], self.action_end),
+            KeyMap(["left"], self.action_cursor_left),
+            KeyMap(["right"], self.action_cursor_right),
+            KeyMap(["ctrl+w"], self.action_delete_left_word),
+            KeyMap(["delete"], self.action_delete_right),
+            KeyMap(["enter"], self.action_submit),
+            KeyMap(["escape"], self.action_close),
+        ]
+
+        if event.key not in set(k for keymap in keymaps for k in keymap.keys):
+            await super().on_key(event)
+            event.stop()
+            event.prevent_default()
+        else:
+            await dispatch_key(keymaps, event)
+
+    def action_submit(self) -> None:
+        self.post_message(SearchSubmitted(value=self.value, forward=self.forward))
+        self.action_close()
+
+    def action_close(self) -> None:
+        self.call_after_refresh(self.remove)
 
 
 class Window(Widget):
@@ -39,7 +85,7 @@ class Window(Widget):
         self.styles.margin = (screen_size.height // 10, screen_size.width // 10)
 
     def action_close(self) -> None:
-        self.remove()
+        self.call_after_refresh(self.remove)
 
 
 class Alert(Window):
@@ -78,7 +124,7 @@ class NavPoint(Widget):
         self.label = label
 
     async def on_key(self, event: events.Key) -> None:
-        await dispatch_key([KeyMap(["enter"], self.action_follow_this)], event, propagate=False)
+        await dispatch_key([KeyMap(self.config.keymaps.confirm, self.action_follow_this)], event, propagate=False)
 
     async def on_mouse_move(self, event: events.MouseMove) -> None:
         self.focus()

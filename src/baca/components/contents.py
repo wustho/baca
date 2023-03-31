@@ -4,14 +4,14 @@ from rich.markdown import Markdown
 from rich.text import Text
 from textual import events
 from textual.app import ComposeResult
+from textual.geometry import Region
+from textual.strip import Strip
 from textual.widget import Widget
 from textual.widgets import DataTable
 from textual.widgets.markdown import Markdown as PrettyMarkdown
-from textual.geometry import Region
-from textual.strip import Strip
 
 from ..ebooks import Ebook
-from ..models import Config, SegmentType, Coordinate
+from ..models import Config, Coordinate, SegmentType
 from .events import OpenThisImage
 
 
@@ -161,7 +161,7 @@ class Content(Widget):
                 for match in pattern.finditer(line_text):
                     is_next_match = (match.start() > current_x) if forward else (match.start() < current_x)
                     if is_next_match:
-                        await self.query(SearchMatch.__name__).remove()
+                        await self.clear_search()
 
                         match_str = match.group()
                         match_coord = Coordinate(match.start(), linenr)
@@ -169,7 +169,10 @@ class Content(Widget):
                         await self.mount(match_widget)
                         match_widget.scroll_visible()
                         return match_coord
-            current_x = -1 if forward else self.size.width + 1  # maybe virtual_size?
+            current_x = -1 if forward else self.size.width  # maybe virtual_size?
+
+    async def clear_search(self) -> None:
+        await self.query(SearchMatch.__name__).remove()
 
     def scroll_to_widget(self, *args, **kwargs) -> bool:
         return self.screen.scroll_to_widget(*args, **kwargs)
