@@ -82,12 +82,7 @@ class SearchMatch(Widget):
         self.coordinate = coordinate
 
     def on_mount(self):
-        # TODO: add a later between content - windows
-        self.styles.layer = "search"
         self.styles.offset = (self.coordinate.x, self.coordinate.y)
-        self.styles.width = "auto"
-        self.styles.height = 1
-        self.styles.background = "red"
 
     def render(self):
         return self.match_str

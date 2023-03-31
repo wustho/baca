@@ -75,6 +75,20 @@ Section {
   /* display: none; */
 }
 
+SearchMatch {
+  layer: search;
+  height: 1;
+  width: auto;
+}
+
+.-dark-mode SearchMatch {
+  background: $dark-accent;
+}
+
+.-light-mode SearchMatch {
+  background: $light-accent;
+}
+
 Content * {
   text-align: $text-justification;
 }
