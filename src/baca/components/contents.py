@@ -87,6 +87,19 @@ class SearchMatch(Widget):
     def render(self):
         return self.match_str
 
+    def scroll_visible(self):
+        # NOTE: need to override default .scroll_visible().
+        # Somehow this widget.virtual_region_with_margin
+        # will cause the screen to scroll to 0.
+        self.screen.scroll_to_region(
+            Region(
+                x=self.coordinate.x,
+                y=self.coordinate.y,
+                width=self.virtual_size.width,
+                height=self.virtual_size.height,
+            )
+        )
+
 
 class Content(Widget):
     can_focus = False
@@ -136,24 +149,27 @@ class Content(Widget):
     # TODO: annotate
     async def search_next(
         self, pattern_str: str, current_coord: Coordinate = Coordinate(-1, 0), forward: bool = True
-    ) -> Coordinate:
+    ) -> Coordinate | None:
         pattern = re.compile(pattern_str, re.IGNORECASE)
         current_x = current_coord.x
-        for linenr in range(current_coord.y, self.virtual_size.height):
+        line_range = (
+            range(current_coord.y, self.virtual_size.height) if forward else reversed(range(0, current_coord.y + 1))
+        )
+        for linenr in line_range:
             line_text = self.get_text_at(linenr)
-            for match in pattern.finditer(line_text):
-                if match.start() > current_x:
-                    await self.query("SearchMatch").remove()
+            if line_text is not None:
+                for match in pattern.finditer(line_text):
+                    is_next_match = (match.start() > current_x) if forward else (match.start() < current_x)
+                    if is_next_match:
+                        await self.query(SearchMatch.__name__).remove()
 
-                    match_str = match.group()
-                    match_coord = Coordinate(match.start(), linenr)
-                    await self.mount(SearchMatch(match_str, match_coord))
-                    self.screen.scroll_to(0, linenr)
-                    # NOTE: cannot use this, somehow match_widget.virtual_region_with_margin
-                    # will cause the screen to scroll to 0
-                    # self.match_widget.scroll_visible()
-                    return match_coord
-            current_x = -1
+                        match_str = match.group()
+                        match_coord = Coordinate(match.start(), linenr)
+                        match_widget = SearchMatch(match_str, match_coord)
+                        await self.mount(match_widget)
+                        match_widget.scroll_visible()
+                        return match_coord
+            current_x = -1 if forward else self.size.width + 1  # maybe virtual_size?
 
     def scroll_to_widget(self, *args, **kwargs) -> bool:
         return self.screen.scroll_to_widget(*args, **kwargs)

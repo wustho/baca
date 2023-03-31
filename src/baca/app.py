@@ -152,7 +152,7 @@ class Baca(App):
 
     async def action_search_next(self) -> None:
         if self.search_mode is None:
-            self.search_mode = SearchMode("and", Coordinate(-1, 0))
+            self.search_mode = SearchMode("and", Coordinate(-1, self.screen.scroll_offset.y))
         new_coord = await self.content.search_next(self.search_mode.pattern_str, self.search_mode.current_coord)
         self.search_mode = SearchMode("and", new_coord)
 

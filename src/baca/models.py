@@ -122,4 +122,5 @@ class Coordinate:
 class SearchMode:
     pattern_str: str
     current_coord: Coordinate
+    forward: bool = True
     saved_position: float = 0.0
