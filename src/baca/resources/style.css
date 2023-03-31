@@ -23,7 +23,7 @@ Screen {
   align: center middle;
   height: auto;
   scrollbar-size: 1 1;
-  layers: content windows;
+  layers: content search windows;
 }
 
 LoadingIndicator {

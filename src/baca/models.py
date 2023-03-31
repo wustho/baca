@@ -110,3 +110,16 @@ class Segment:
 class KeyMap:
     keys: list[str]
     action: Callable
+
+
+@dataclass(frozen=True)
+class Coordinate:
+    x: int
+    y: int
+
+
+@dataclass(frozen=True)
+class SearchMode:
+    pattern_str: str
+    current_coord: Coordinate
+    saved_position: float = 0.0

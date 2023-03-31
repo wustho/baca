@@ -1,3 +1,5 @@
+import re
+
 from rich.markdown import Markdown
 from rich.text import Text
 from textual import events
@@ -5,9 +7,11 @@ from textual.app import ComposeResult
 from textual.widget import Widget
 from textual.widgets import DataTable
 from textual.widgets.markdown import Markdown as PrettyMarkdown
+from textual.geometry import Region
+from textual.strip import Strip
 
 from ..ebooks import Ebook
-from ..models import Config, SegmentType
+from ..models import Config, SegmentType, Coordinate
 from .events import OpenThisImage
 
 
@@ -69,6 +73,26 @@ class PrettyBody(PrettyMarkdown):
         self.nav_point = nav_point
 
 
+class SearchMatch(Widget):
+    can_focus = False
+
+    def __init__(self, match_str: str, coordinate: Coordinate):
+        super().__init__()
+        self.match_str = match_str
+        self.coordinate = coordinate
+
+    def on_mount(self):
+        # TODO: add a later between content - windows
+        self.styles.layer = "search"
+        self.styles.offset = (self.coordinate.x, self.coordinate.y)
+        self.styles.width = "auto"
+        self.styles.height = 1
+        self.styles.background = "red"
+
+    def render(self):
+        return self.match_str
+
+
 class Content(Widget):
     can_focus = False
 
@@ -106,6 +130,35 @@ class Content(Widget):
 
     def compose(self) -> ComposeResult:
         yield from iter(self._segments)
+
+    def get_text_at(self, y: int) -> str | None:
+        accumulated_height = 0
+        for segment in self._segments:
+            if accumulated_height + segment.virtual_size.height > y:
+                return segment.render_lines(Region(0, y - accumulated_height, self.virtual_size.width, 1))[0].text
+            accumulated_height += segment.virtual_size.height
+
+    # TODO: annotate
+    async def search_next(
+        self, pattern_str: str, current_coord: Coordinate = Coordinate(-1, 0), forward: bool = True
+    ) -> Coordinate:
+        pattern = re.compile(pattern_str, re.IGNORECASE)
+        current_x = current_coord.x
+        for linenr in range(current_coord.y, self.virtual_size.height):
+            line_text = self.get_text_at(linenr)
+            for match in pattern.finditer(line_text):
+                if match.start() > current_x:
+                    await self.query("SearchMatch").remove()
+
+                    match_str = match.group()
+                    match_coord = Coordinate(match.start(), linenr)
+                    await self.mount(SearchMatch(match_str, match_coord))
+                    self.screen.scroll_to(0, linenr)
+                    # NOTE: cannot use this, somehow match_widget.virtual_region_with_margin
+                    # will cause the screen to scroll to 0
+                    # self.match_widget.scroll_visible()
+                    return match_coord
+            current_x = -1
 
     def scroll_to_widget(self, *args, **kwargs) -> bool:
         return self.screen.scroll_to_widget(*args, **kwargs)

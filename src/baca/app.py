@@ -9,6 +9,7 @@ from textual.actions import SkipAction
 from textual.app import App, ComposeResult
 from textual.css.query import NoMatches
 from textual.widgets import LoadingIndicator
+from textual.geometry import Region
 
 from .components.contents import Content
 from .components.events import DoneLoading, FollowThis, OpenThisImage, Screenshot
@@ -16,7 +17,7 @@ from .components.windows import Alert, DictDisplay, ToC
 from .config import load_config
 from .ebooks import Ebook
 from .exceptions import ImageViewerDoesNotExist
-from .models import KeyMap, ReadingHistory
+from .models import KeyMap, ReadingHistory, SearchMode, Coordinate
 from .utils.app_resources import get_resource_file
 from .utils.keys_parser import dispatch_key
 
@@ -33,6 +34,7 @@ class Baca(App):
         # TODO: make reactive and display percentage
         # as alternative for scrollbar
         self.reading_progress = 0.0
+        self.search_mode = None
 
     def on_load(self, _: events.Load) -> None:
         assert self._loop is not None
@@ -119,6 +121,15 @@ class Baca(App):
                 KeyMap(keymaps.screenshot, lambda: self.post_message(Screenshot())),
                 # TODO: search feature
                 # KeyMap(["D"], lambda: self.log("baca--->>>", self.content._segments[3]._render_cache.lines[1].text)),
+                # KeyMap(["D"], lambda: self.log("baca--->>>", self.content._segments[3].render_line(3)._segments)),
+                # KeyMap(["D"], lambda: self.log("baca--->>>", self.content._segments[3].virtual_size)),
+                # KeyMap(["D"], lambda: self.log("baca--->>>", self.content.get_text_at(3)))
+                # KeyMap(["D"], lambda: self.log("baca--->>>", self.content.size.width))
+                # KeyMap(["D"], lambda: self.log("baca--->>>", [ i.text for i in self.content._segments[1].render_lines(Region(0, 0, 80, 3))])),
+                # KeyMap(["D"], lambda: self.screen.scroll_to(0, 1001)),
+                # KeyMap(["D"], lambda: self.log("baca--->>>", repr(self.content._render_cache)))
+                # KeyMap(["D"], lambda: self.log("baca--->>>", self.content._segments[3])),
+                KeyMap(["slash"], self.action_search_next),
             ],
             event,
         )
@@ -146,6 +157,17 @@ class Baca(App):
         if not self.screen.allow_vertical_scroll:
             raise SkipAction()
         self.screen.scroll_page_up(duration=self.config.page_scroll_duration)
+
+    async def action_search_next(self) -> None:
+        if self.search_mode is None:
+            self.search_mode = SearchMode("and", Coordinate(-1, 0))
+        else:
+            new_coord = await self.content.search_next(self.search_mode.pattern_str, self.search_mode.current_coord)
+            self.search_mode = SearchMode("and", new_coord)
+            # try:
+            #     self.screen.scroll_to_widget(self.content.query_one("SearchWidget"), top=True)
+            # except:
+            #     pass
 
     async def action_open_help(self) -> None:
         if self.help_window is None:
