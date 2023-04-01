@@ -21,10 +21,6 @@ class SearchInputPrompt(Input):
         self.border_title = f"Search {'Forward' if forward else 'Backward'}"
 
     def on_mount(self):
-        self.styles.layer = "windows"
-        self.styles.dock = "bottom"  # type: ignore
-        self.styles.border_title_align = "center"
-        self.styles.border = ("double", "blue")
         self.focus()
 
     async def on_key(self, event: events.Key) -> None:

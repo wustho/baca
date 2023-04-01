@@ -155,16 +155,21 @@ class Baca(App):
     async def action_input_search(self, forward: bool) -> None:
         await self.mount(SearchInputPrompt(forward=forward))
 
-    async def action_search_next(self) -> None:
+    async def action_search_next(self) -> bool:
         if self.search_mode is not None:
             new_coord = await self.content.search_next(
-                # TODO: maybe just send whole search_mode inst
                 self.search_mode.pattern_str,
                 self.search_mode.current_coord,
                 self.search_mode.forward,
             )
             if new_coord is not None:
                 self.search_mode = dataclasses.replace(self.search_mode, current_coord=new_coord)
+                return True
+            else:
+                # TODO: inconsistent alert window size on initial search
+                await self.alert(f"Found no match: '{self.search_mode.pattern_str}'")
+
+        return False
 
     async def action_search_prev(self) -> None:
         if self.search_mode is not None:
@@ -212,7 +217,9 @@ class Baca(App):
 
     async def action_cancel_search_or_quit(self) -> None:
         if self.search_mode is not None:
-            self.screen.scroll_to(0, self.search_mode.saved_position * self.screen.max_scroll_y)
+            self.screen.scroll_to(
+                0, self.search_mode.saved_position * self.screen.max_scroll_y, duration=self.config.page_scroll_duration
+            )
             await self.action_stop_search()
         else:
             await self.action_quit()
@@ -224,7 +231,9 @@ class Baca(App):
             forward=message.forward,
             saved_position=self.reading_progress,
         )
-        await self.action_search_next()
+        is_found = await self.action_search_next()
+        if not is_found:
+            self.search_mode = None
 
     async def on_follow_this(self, message: FollowThis) -> None:
         self.content.scroll_to_section(message.nav_point)

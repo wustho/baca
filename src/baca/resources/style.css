@@ -103,6 +103,24 @@ Content {
 
 /* windows */
 
+SearchInputPrompt {
+  layer: windows;
+  dock: bottom;
+  border-title-align: center;
+}
+
+.-dark-mode SearchInputPrompt {
+  background: $dark-bg;
+  color: $dark-fg;
+  border: solid $dark-accent;
+}
+
+.-light-mode SearchInputPrompt {
+  background: $light-bg;
+  color: $light-fg;
+  border: solid $light-accent;
+}
+
 Window {
   dock: top;
   layer: windows;
@@ -132,6 +150,7 @@ DictDisplay {
 /* } */
 
 Alert {
+  layer: windows;
   border: solid red;
   color: red;
   scrollbar-color: red;
