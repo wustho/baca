@@ -16,6 +16,7 @@ But with a sleek and contemporary appearance that's sure to captivate you!
 - Text justification
 - Dark & light colorscheme
 - Regex search
+- Hyperlinks
 
 ## Requirements
 
