@@ -146,7 +146,6 @@ class Content(Widget):
                 return segment.render_lines(Region(0, y - accumulated_height, self.virtual_size.width, 1))[0].text
             accumulated_height += segment.virtual_size.height
 
-    # TODO: annotate
     async def search_next(
         self, pattern_str: str, current_coord: Coordinate = Coordinate(-1, 0), forward: bool = True
     ) -> Coordinate | None:
