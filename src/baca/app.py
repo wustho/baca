@@ -174,7 +174,6 @@ class Baca(App):
     async def action_search_prev(self) -> None:
         if self.search_mode is not None:
             new_coord = await self.content.search_next(
-                # TODO: maybe just send whole search_mode inst
                 self.search_mode.pattern_str,
                 self.search_mode.current_coord,
                 not self.search_mode.forward,
