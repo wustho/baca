@@ -21,6 +21,10 @@ class FormatNotSupported(BacaException):
     pass
 
 
+class ImageOpenError(Exception):
+    pass
+
+
 class ImageViewerDoesNotExist(BacaException):
     def __init__(self):
         super().__init__(

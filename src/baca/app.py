@@ -1,5 +1,5 @@
+import asyncio
 import dataclasses
-import subprocess
 from datetime import datetime
 from pathlib import Path
 from typing import Type
@@ -15,10 +15,12 @@ from .components.events import DoneLoading, FollowThis, OpenThisImage, Screensho
 from .components.windows import Alert, DictDisplay, SearchInputPrompt, ToC
 from .config import load_config
 from .ebooks import Ebook
-from .exceptions import ImageViewerDoesNotExist
+from .exceptions import ImageOpenError, ImageViewerDoesNotExist
 from .models import Coordinate, KeyMap, ReadingHistory, SearchMode
 from .utils.app_resources import get_resource_file
 from .utils.keys_parser import dispatch_key
+from .utils.systems import get_system_launcher
+from .utils.urls import is_url
 
 
 class Baca(App):
@@ -227,6 +229,24 @@ class Baca(App):
         else:
             await self.action_quit()
 
+    async def action_link(self, link: str) -> None:
+        if is_url(link):
+            launcher = get_system_launcher()
+            if launcher is None:
+                await self.alert("No link launcher found in the system.")
+            else:
+                proc = await asyncio.create_subprocess_exec(launcher, link, stderr=asyncio.subprocess.PIPE)
+                await proc.wait()
+                if proc.returncode != 0:
+                    _, stderr = await proc.communicate()
+                    await self.alert(stderr.decode())
+
+        elif link in [n.nav_point for n in self.content.get_navigables()]:
+            self.content.scroll_to_section(link)
+
+        else:
+            await self.alert(f"No nav point found in document: {link}")
+
     async def on_search_submitted(self, message: SearchSubmitted) -> None:
         self.search_mode = SearchMode(
             pattern_str=message.value,
@@ -253,10 +273,15 @@ class Baca(App):
             with open(tmpfilepath, "wb") as img_tmp:
                 img_tmp.write(bytestr)
 
-            subprocess.check_output([self.config.image_viewer, tmpfilepath], stderr=subprocess.PIPE)
-        except (subprocess.CalledProcessError, FileNotFoundError, ImageViewerDoesNotExist) as e:
-            error_msg = e.stderr.decode() if isinstance(e, subprocess.CalledProcessError) else str(e)
-            await self.alert(f"Error opening an image: {error_msg}")
+            proc = await asyncio.create_subprocess_exec(
+                self.config.image_viewer, tmpfilepath, stderr=asyncio.subprocess.PIPE
+            )
+            await proc.wait()
+            if proc.returncode != 0:
+                _, stderr = await proc.communicate()
+                raise ImageOpenError(stderr.decode())
+        except (ImageOpenError, FileNotFoundError, ImageViewerDoesNotExist) as e:
+            await self.alert(f"Error opening an image: {e}")
 
     async def on_screenshot(self, _: Screenshot) -> None:
         self.save_screenshot(f"baca_{datetime.now().isoformat()}.svg")

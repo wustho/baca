@@ -1,4 +1,6 @@
 import re
+from marshal import dumps
+from urllib.parse import urljoin
 
 from rich.markdown import Markdown
 from rich.text import Text
@@ -12,6 +14,7 @@ from textual.widgets.markdown import Markdown as PrettyMarkdown
 
 from ..ebooks import Ebook
 from ..models import Config, Coordinate, SegmentType
+from ..utils.urls import is_url
 from .events import OpenThisImage
 
 
@@ -48,6 +51,18 @@ class Body(SegmentWidget):
         return Markdown(
             self.content, justify=dict(center="center", left="left", right="right", justify="full")[self.styles.text_align]  # type: ignore
         )
+
+    def render_line(self, y) -> Strip:
+        strip = super().render_line(y)
+        for s in strip._segments:
+            if s.style is not None and s.style.link is not None:
+                link = (
+                    s.style.link
+                    if is_url(s.style.link) or self.nav_point is None
+                    else urljoin(self.nav_point, s.style.link)
+                )
+                s.style._meta = dumps({"@click": f"link({link!r})"})
+        return strip
 
 
 class Image(SegmentWidget):
