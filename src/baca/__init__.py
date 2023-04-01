@@ -1,5 +1,5 @@
 __appname__ = "baca"
-__version__ = "0.1.7"
+__version__ = "0.1.8"
 __license__ = "GPL-3.0"
 __author__ = "Benawi Adha"
 __email__ = "benawiadha@gmail.com"

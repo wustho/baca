@@ -19,5 +19,12 @@ class OpenThisImage(Message):
         self.value = value
 
 
+class SearchSubmitted(Message):
+    def __init__(self, value: str, forward: bool):
+        super().__init__()
+        self.value = value
+        self.forward = forward
+
+
 class Screenshot(Message):
     pass

@@ -15,6 +15,7 @@ But with a sleek and contemporary appearance that's sure to captivate you!
 - Lets you open images
 - Text justification
 - Dark & light colorscheme
+- Regex search
 
 ## Requirements
 
@@ -77,8 +78,7 @@ MaxTextWidth = 80
 TextJustification = justify
 
 # currently using pretty=yes is slow
-# and taking huge amount of memory (more than GUI reader)
-# but it can render table pretty well
+# and taking huge amount of memory
 Pretty = no
 
 PageScrollDuration = 0.2
@@ -103,21 +103,46 @@ Home = home,g
 End = end,G
 OpenToc = tab
 OpenMetadata = M
-OpenHelp = question_mark
+OpenHelp = f1
+SearchForward = slash
+SearchBackward = question_mark
+NextMatch = n
+PreviousMatch = N
+Confirm = enter
 CloseOrQuit = q,escape
 Screenshot = f12
 ```
 
-## Current Limitations
+## Known Limitations
 
-Compared to [epy](https://github.com/wustho/epy), currently `baca` has some missing features.
-But these are planned to be implemented to `baca` in the near future:
+- When searching for specific phrases in `baca`,
+  keep in mind that it may not be able to find them if they span across two lines,
+  much like in the search behavior of editor vi(m).
 
-- [ ] **TODO** Search feature
-- [ ] **TODO** Bookmarks
-- [ ] **TODO** FictionBook support
-- [ ] **TODO** URL reading support
-- [ ] **TODO** Transparent background
+  For example, `baca` won't be able to find the phrase `"for it"` because it is split into two lines
+  in this example.
+
+  ```
+  ...
+  she had forgotten the little golden key, and when she went back to the table for
+  it, she found she could not possibly reach it: she could see  it  quite  plainly
+  ...
+  ```
+
+
+  Additionally, `baca` may struggle to locate certain phrases due to adjustments made for text justification.
+  See the example above, `"see_it"` may become `"see__it"` due to adjusted spacing between words.
+  In this case, it may be more effective to use a regex search for `"see +it"` or simply search for the word `"see"` alone.
+
+  Overall, `baca`'s search feature is most effective for locating individual words
+  rather than phrases that may be split across multiple lines or impacted by text justification.
+
+- Compared to [epy](https://github.com/wustho/epy), currently `baca` has some missing features.
+  But these are planned to be implemented to `baca` in the near future:
+
+  - [ ] **TODO** Bookmarks
+  - [ ] **TODO** FictionBook support
+  - [ ] **TODO** URL reading support
 
 ## Credits
 

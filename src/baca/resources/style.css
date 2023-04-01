@@ -23,7 +23,7 @@ Screen {
   align: center middle;
   height: auto;
   scrollbar-size: 1 1;
-  layers: content windows;
+  layers: content search windows;
 }
 
 LoadingIndicator {
@@ -75,6 +75,20 @@ Section {
   /* display: none; */
 }
 
+SearchMatch {
+  layer: search;
+  height: 1;
+  width: auto;
+}
+
+.-dark-mode SearchMatch {
+  background: $dark-accent;
+}
+
+.-light-mode SearchMatch {
+  background: $light-accent;
+}
+
 Content * {
   text-align: $text-justification;
 }
@@ -88,6 +102,24 @@ Content {
 }
 
 /* windows */
+
+SearchInputPrompt {
+  layer: windows;
+  dock: bottom;
+  border-title-align: center;
+}
+
+.-dark-mode SearchInputPrompt {
+  background: $dark-bg;
+  color: $dark-fg;
+  border: solid $dark-accent;
+}
+
+.-light-mode SearchInputPrompt {
+  background: $light-bg;
+  color: $light-fg;
+  border: solid $light-accent;
+}
 
 Window {
   dock: top;
@@ -118,6 +150,7 @@ DictDisplay {
 /* } */
 
 Alert {
+  layer: windows;
   border: solid red;
   color: red;
   scrollbar-color: red;
