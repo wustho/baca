@@ -210,7 +210,8 @@ class Baca(App):
             toc_values = [e.value for e in toc_entries]
             for s in self.content.get_navigables():
                 if s.nav_point is not None and s.nav_point in toc_values:
-                    if self.screen.scroll_y >= s.virtual_region.y:
+                    # if round(self.screen.scroll_y) >= s.virtual_region.y:
+                    if self.screen.scroll_offset.y >= s.virtual_region.y:
                         initial_index = toc_values.index(s.nav_point)
                     else:
                         break
