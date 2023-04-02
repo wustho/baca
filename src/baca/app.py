@@ -206,17 +206,16 @@ class Baca(App):
             if len(toc_entries) == 0:
                 return await self.alert("No content navigations for this ebook.")
 
-            initial_focused_id: str | None = None
+            initial_index = 0
+            toc_values = [e.value for e in toc_entries]
             for s in self.content.get_navigables():
-                # TODO: reevaluate!
-                # if self.screen.scroll_y >= s.virtual_region.y - 1
-                # workaround for initial toc issue on restore reading pos
-                if self.screen.scroll_y >= s.virtual_region.y:
-                    initial_focused_id = s.nav_point
-                else:
-                    break
+                if s.nav_point is not None and s.nav_point in toc_values:
+                    if self.screen.scroll_y >= s.virtual_region.y:
+                        initial_index = toc_values.index(s.nav_point)
+                    else:
+                        break
 
-            toc = ToC(self.config, entries=toc_entries, initial_focused_id=initial_focused_id)
+            toc = ToC(self.config, entries=toc_entries, initial_index=initial_index)
             # NOTE: await to prevent broken layout
             await self.mount(toc)
 

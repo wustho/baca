@@ -1,8 +1,7 @@
-from typing import Type
-
 from textual import events
 from textual.app import ComposeResult
 from textual.message import Message
+from textual.reactive import reactive
 from textual.widget import Widget
 from textual.widgets import Input, Static
 
@@ -54,8 +53,8 @@ class SearchInputPrompt(Input):
 class Window(Widget):
     can_focus = True
 
-    def __init__(self, config: Config):
-        super().__init__()
+    def __init__(self, config: Config, id: str | None = None):
+        super().__init__(**(dict() if id is None else dict(id=id)))
         self.config = config
         keymaps = self.config.keymaps
         self.keymaps = [
@@ -102,7 +101,7 @@ class Alert(Window):
 
 class DictDisplay(Window):
     def __init__(self, config: Config, id: str, title: str, data: dict):
-        super().__init__(config)
+        super().__init__(config, id)
         self.data = data
         self.border_title = title
 
@@ -111,70 +110,77 @@ class DictDisplay(Window):
 
 
 class NavPoint(Widget):
-    can_focus = True
+    can_focus = False
 
-    def __init__(self, config: Config, label: str, value: str):
+    class Selected(Message):
+        def __init__(self, index: int) -> None:
+            super().__init__()
+            self.index = index
+
+    class Clicked(Selected):
+        pass
+
+    def __init__(self, index: int, label: str):
         super().__init__()
-        self.config = config
-        self.value = value
+        self.index = index
         self.label = label
-
-    async def on_key(self, event: events.Key) -> None:
-        await dispatch_key([KeyMap(self.config.keymaps.confirm, self.action_follow_this)], event, propagate=False)
-
-    async def on_mouse_move(self, event: events.MouseMove) -> None:
-        self.focus()
-
-    def action_follow_this(self) -> None:
-        self.post_message(FollowThis(self.value))
 
     def render(self):
         return self.label
 
+    async def on_mouse_move(self, _: events.MouseMove) -> None:
+        self.post_message(self.Selected(self.index))
+
     async def on_click(self) -> None:
-        # self.post_message(events.DescendantFocus())
-        # return await super()._on_click(event)
-        self.action_follow_this()
+        self.post_message(self.Selected(self.index))
+        self.post_message(self.Clicked(self.index))
 
 
 class ToC(Window):
     border_title = "Table of Contents"
+    index = reactive(0)
 
-    def __init__(self, config: Config, entries: list[TocEntry], initial_focused_id: str | None = None):
+    def __init__(self, config: Config, entries: list[TocEntry], initial_index: int = 0):
         super().__init__(config)
         self.entries = entries
-        self.initial_focused_id = initial_focused_id
-        self.entry_widgets = [NavPoint(self.config, entry.label, entry.value) for entry in self.entries]
+        self.entry_widgets = [NavPoint(n, entry.label) for n, entry in enumerate(self.entries)]
         keymaps = config.keymaps
         self.keymaps = [
             KeyMap(keymaps.close + config.keymaps.open_toc, self.action_close),
-            KeyMap(keymaps.scroll_down, lambda: self.action_shift_focus(1)),
-            KeyMap(keymaps.scroll_up, lambda: self.action_shift_focus(-1)),
+            KeyMap(keymaps.scroll_down, lambda: self.action_select_next(1)),
+            KeyMap(keymaps.scroll_up, lambda: self.action_select_next(-1)),
             KeyMap(keymaps.home, lambda: self.entry_widgets[0].focus()),
             KeyMap(keymaps.end, lambda: self.entry_widgets[-1].focus()),
+            KeyMap(keymaps.confirm, self.follow_nav_point),
             KeyMap(keymaps.screenshot, lambda: self.post_message(Screenshot())),
         ]
+        self.index = initial_index
 
     def on_focus(self) -> None:
-        # always make the focus to the entries
-        # and let the entries pass the key event to this window
-        if len(self.entries):
-            if self.initial_focused_id is None:
-                self.entry_widgets[0].focus()
-            else:
-                for w in self.entry_widgets:
-                    if w.value == self.initial_focused_id:
-                        w.focus()
-                        w.scroll_visible(top=True)
-                        break
+        # NOTE: by default when a widget gaining focus, in this case ToC
+        # it will reset the scrolling position of this widget which will hide selected NavPoint
+        # So, either assign new value for selected navpoint or run watch_selected_value()
+        self.watch_index(self.index, self.index)
 
-    def action_shift_focus(self, n: int) -> None:
-        try:
-            current_focused_idx = next(n for n, e in enumerate(self.entry_widgets) if e.has_focus)
-            next_focused_idx = (current_focused_idx + n) % len(self.entry_widgets)
-        except StopIteration:
-            next_focused_idx = 0 if n >= 0 else -1
-        self.entry_widgets[next_focused_idx].focus()
+    def action_select_next(self, n: int) -> None:
+        self.index = (self.index + n) % len(self.entries)
 
     def compose(self) -> ComposeResult:
         yield from self.entry_widgets
+
+    def watch_index(self, old: int, new: int) -> None:
+        [entry_widget.remove_class("selected") for entry_widget in self.entry_widgets]
+        selected = self.entry_widgets[new]
+        selected.add_class("selected")
+        self.scroll_to_widget(selected, top=False)
+
+    def on_nav_point_selected(self, message: NavPoint.Selected) -> None:
+        self.index = message.index
+        message.stop()
+
+    def on_nav_point_clicked(self, message: NavPoint.Clicked) -> None:
+        self.follow_nav_point()
+        message.stop()
+
+    def follow_nav_point(self) -> None:
+        self.post_message(FollowThis(self.entries[self.index].value))
