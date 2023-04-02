@@ -106,7 +106,7 @@ Content {
 SearchInputPrompt {
   layer: windows;
   dock: bottom;
-  border-title-align: center;
+  border-title-align: left;
 }
 
 .-dark-mode SearchInputPrompt {
@@ -163,10 +163,10 @@ NavPoint {
   padding: 0 5;
 }
 
-.-dark-mode NavPoint:focus {
+.-dark-mode NavPoint.selected {
   background: $dark-accent;
 }
 
-.-light-mode NavPoint:focus {
+.-light-mode NavPoint.selected {
   background: $light-accent;
 }
