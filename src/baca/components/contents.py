@@ -91,6 +91,8 @@ class PrettyBody(PrettyMarkdown):
         self.nav_point = nav_point
 
     def get_text_at(self, y: int) -> str | None:
+        # TODO: this implementation still has issue in positioning match
+        # at the end of ebook segment
         accumulated_height = 0
         for child in self.children:
             if accumulated_height + child.virtual_region_with_margin.height > y:
