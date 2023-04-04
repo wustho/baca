@@ -1,5 +1,10 @@
+import asyncio
+import os
+import platform
 import shutil
-import sys
+from pathlib import Path
+
+from ..exceptions import LaunchingFileError
 
 LAUNCHERS = [
     "gnome-open",
@@ -8,35 +13,23 @@ LAUNCHERS = [
     "kde-open",
 ]
 
-VIEWERS = [
-    *LAUNCHERS,
-    "feh",
-    "imv",
-    "gio",
-    "firefox",
-]
 
+async def launch_file(path: Path | str, preferred: str = LAUNCHERS[0]) -> None:
+    if platform.system() == "Windows":
+        loop = asyncio.get_running_loop()
+        await loop.run_in_executor(None, os.startfile, path)  # type: ignore
+        return
 
-def determine_image_viewer(preferred: str = "auto") -> str | None:
-    if sys.platform == "win32":
-        return "start"
-    elif sys.platform == "darwin":
-        return "open"
-    else:
-        all_viewers = [preferred, *VIEWERS]
-        try:
-            return [v for v in all_viewers if shutil.which(v) is not None][0]
-        except IndexError:
-            return None
-
-
-def get_system_launcher() -> str | None:
-    if sys.platform == "win32":
-        return "start"
-    elif sys.platform == "darwin":
-        return "open"
+    if platform.system() == "Darwin":
+        launcher = "open"
     else:
         try:
-            return [o for o in LAUNCHERS if shutil.which(o) is not None][0]
-        except IndexError:
-            return None
+            launcher = next(l for l in [preferred, *LAUNCHERS] if shutil.which(l) is not None)
+        except StopIteration:
+            raise LaunchingFileError("System launcher not found.")
+
+    proc = await asyncio.create_subprocess_exec(launcher, path, stderr=asyncio.subprocess.PIPE)
+    await proc.wait()
+    if proc.returncode != 0:
+        _, stderr = await proc.communicate()
+        raise LaunchingFileError(stderr.decode())

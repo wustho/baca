@@ -2,7 +2,6 @@ from configparser import ConfigParser
 from typing import Literal, cast
 
 from .models import Color, Config, Keymaps
-from .utils.systems import determine_image_viewer
 from .utils.user_appdirs import DEFAULT_CONFIG, retrieve_user_config_file
 
 
@@ -25,7 +24,7 @@ def load_config() -> Config:
         )
 
     return Config(
-        image_viewer=determine_image_viewer(preferred=str(get_value("General", "PreferredImageViewer"))),
+        preferred_image_viewer=str(get_value("General", "PreferredImageViewer")),
         max_text_width=str(get_value("General", "MaxTextWidth")),
         text_justification=cast(
             Literal["default", "center", "full", "right", "left"], get_value("General", "TextJustification")

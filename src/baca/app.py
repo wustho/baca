@@ -15,11 +15,11 @@ from .components.events import DoneLoading, FollowThis, OpenThisImage, Screensho
 from .components.windows import Alert, DictDisplay, SearchInputPrompt, ToC
 from .config import load_config
 from .ebooks import Ebook
-from .exceptions import ImageOpenError, ImageViewerDoesNotExist
+from .exceptions import LaunchingFileError
 from .models import Coordinate, KeyMap, ReadingHistory, SearchMode
 from .utils.app_resources import get_resource_file
 from .utils.keys_parser import dispatch_key
-from .utils.systems import get_system_launcher
+from .utils.systems import launch_file
 from .utils.urls import is_url
 
 
@@ -231,15 +231,10 @@ class Baca(App):
 
     async def action_link(self, link: str) -> None:
         if is_url(link):
-            launcher = get_system_launcher()
-            if launcher is None:
-                await self.alert("No link launcher found in the system.")
-            else:
-                proc = await asyncio.create_subprocess_exec(launcher, link, stderr=asyncio.subprocess.PIPE)
-                await proc.wait()
-                if proc.returncode != 0:
-                    _, stderr = await proc.communicate()
-                    await self.alert(stderr.decode())
+            try:
+                await launch_file(link)
+            except LaunchingFileError as e:
+                await self.alert(str(e))
 
         elif link in [n.nav_point for n in self.content.get_navigables()]:
             self.content.scroll_to_section(link)
@@ -265,22 +260,13 @@ class Baca(App):
 
     async def on_open_this_image(self, message: OpenThisImage) -> None:
         try:
-            if self.config.image_viewer is None:
-                raise ImageViewerDoesNotExist()
-
             filename, bytestr = self.ebook.get_img_bytestr(message.value)
             tmpfilepath = self.ebook.get_tempdir() / filename
             with open(tmpfilepath, "wb") as img_tmp:
                 img_tmp.write(bytestr)
 
-            proc = await asyncio.create_subprocess_exec(
-                self.config.image_viewer, str(tmpfilepath.resolve()), stderr=asyncio.subprocess.PIPE
-            )
-            await proc.wait()
-            if proc.returncode != 0:
-                _, stderr = await proc.communicate()
-                raise ImageOpenError(stderr.decode())
-        except (ImageOpenError, FileNotFoundError, ImageViewerDoesNotExist) as e:
+            await launch_file(tmpfilepath, preferred=self.config.preferred_image_viewer)
+        except LaunchingFileError as e:
             await self.alert(f"Error opening an image: {e}")
 
     async def on_screenshot(self, _: Screenshot) -> None:
