@@ -274,7 +274,7 @@ class Baca(App):
                 img_tmp.write(bytestr)
 
             proc = await asyncio.create_subprocess_exec(
-                self.config.image_viewer, tmpfilepath, stderr=asyncio.subprocess.PIPE
+                self.config.image_viewer, str(tmpfilepath.resolve()), stderr=asyncio.subprocess.PIPE
             )
             await proc.wait()
             if proc.returncode != 0:
