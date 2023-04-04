@@ -75,7 +75,7 @@ class Keymaps:
 
 @dataclass(frozen=True)
 class Config:
-    image_viewer: str | None
+    preferred_image_viewer: str
     max_text_width: str
     text_justification: Literal["default", "center", "full", "right", "left"]
     pretty: bool
