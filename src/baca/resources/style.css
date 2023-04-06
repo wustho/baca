@@ -79,6 +79,7 @@ SearchMatch {
   layer: search;
   height: 1;
   width: auto;
+  text-style: bold;
 }
 
 .-dark-mode SearchMatch {
@@ -99,6 +100,10 @@ Content {
   layer: content;
   max-width: $text-max-width;
   margin: 0 2;
+}
+
+Markdown {
+  margin: 0 0;
 }
 
 /* windows */

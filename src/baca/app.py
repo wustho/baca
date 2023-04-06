@@ -155,11 +155,7 @@ class Baca(App):
         self.screen.scroll_page_up(duration=self.config.page_scroll_duration)
 
     async def action_input_search(self, forward: bool) -> None:
-        if self.config.pretty:
-            # TODO:
-            await self.alert("Currently search feature isn't implemented for pretty=yes configuration.")
-        else:
-            await self.mount(SearchInputPrompt(forward=forward))
+        await self.mount(SearchInputPrompt(forward=forward))
 
     async def action_search_next(self) -> bool:
         if self.search_mode is not None:

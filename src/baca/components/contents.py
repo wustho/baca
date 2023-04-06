@@ -39,6 +39,9 @@ class SegmentWidget(Widget):
         self.config = config
         self.nav_point = nav_point
 
+    def get_text_at(self, y: int) -> str:
+        return self.render_lines(Region(0, y, self.virtual_region_with_margin.width, 1))[0].text
+
 
 class Body(SegmentWidget):
     def __init__(self, config: Config, content: str, nav_point: str | None = None):
@@ -86,6 +89,17 @@ class PrettyBody(PrettyMarkdown):
     def __init__(self, config: Config, value: str, nav_point: str | None = None):
         super().__init__(value)
         self.nav_point = nav_point
+
+    def get_text_at(self, y: int) -> str | None:
+        # TODO: this implementation still has issue in positioning match
+        # at the end of ebook segment
+        accumulated_height = 0
+        for child in self.children:
+            if accumulated_height + child.virtual_region_with_margin.height > y:
+                return child.render_lines(Region(0, y - accumulated_height, child.virtual_region_with_margin.width, 1))[
+                    0
+                ].text
+            accumulated_height += child.virtual_region_with_margin.height
 
 
 class SearchMatch(Widget):
@@ -157,9 +171,9 @@ class Content(Widget):
     def get_text_at(self, y: int) -> str | None:
         accumulated_height = 0
         for segment in self._segments:
-            if accumulated_height + segment.virtual_size.height > y:
-                return segment.render_lines(Region(0, y - accumulated_height, self.virtual_size.width, 1))[0].text
-            accumulated_height += segment.virtual_size.height
+            if accumulated_height + segment.virtual_region_with_margin.height > y:
+                return segment.get_text_at(y - accumulated_height)
+            accumulated_height += segment.virtual_region_with_margin.height
 
     async def search_next(
         self, pattern_str: str, current_coord: Coordinate = Coordinate(-1, 0), forward: bool = True
