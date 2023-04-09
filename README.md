@@ -26,6 +26,7 @@ But with a sleek and contemporary appearance that's sure to captivate you!
 
 - Via pip: `pip install baca`
 - Via git: `pip install git+https://github.com/wustho/baca`
+- Via AUR: `yay -S baca-ereader-git`
 
 ## Usage
 
