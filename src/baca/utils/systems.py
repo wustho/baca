@@ -4,7 +4,7 @@ import platform
 import shutil
 from pathlib import Path
 
-from ..exceptions import LaunchingFileError
+from baca.exceptions import LaunchingFileError
 
 LAUNCHERS = [
     "gnome-open",

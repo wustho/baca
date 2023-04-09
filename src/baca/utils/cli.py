@@ -7,10 +7,10 @@ from typing import Type
 from rich.console import Console
 from rich.table import Table
 
-from .. import __appname__, __version__
-from ..ebooks import Azw, Ebook, Epub, Mobi
-from ..exceptions import EbookNotFound, FormatNotSupported
-from .queries import (
+from baca import __appname__, __version__
+from baca.ebooks import Azw, Ebook, Epub, Mobi
+from baca.exceptions import EbookNotFound, FormatNotSupported
+from baca.utils.queries import (
     get_all_reading_history,
     get_best_match_from_history,
     get_last_read_ebook,

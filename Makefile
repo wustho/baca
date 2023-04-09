@@ -11,7 +11,7 @@ console:
 	@textual console
 
 debug:
-	@textual run --dev tools/debug.py:Debug
+	@textual run --dev tools/debug.py:Baca
 
 publish:
 	# poetry build

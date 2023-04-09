@@ -3,7 +3,7 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Iterator
 
-from ..models import BookMetadata, Segment, TocEntry
+from baca.models import BookMetadata, Segment, TocEntry
 
 
 class Ebook:

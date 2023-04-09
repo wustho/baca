@@ -7,10 +7,10 @@ from pathlib import Path
 from typing import Callable, Iterator
 from urllib.parse import unquote, urljoin, urlparse
 
-from ..models import BookMetadata, Segment, TocEntry
-from ..utils.html_parser import parse_html_to_segmented_md
-from ..utils.tempdir import create_tempdir
-from .base import Ebook
+from baca.ebooks.base import Ebook
+from baca.models import BookMetadata, Segment, TocEntry
+from baca.utils.html_parser import parse_html_to_segmented_md
+from baca.utils.tempdir import create_tempdir
 
 
 class Epub(Ebook):

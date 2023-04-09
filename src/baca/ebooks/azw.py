@@ -3,9 +3,9 @@ import os
 import zipfile
 from pathlib import Path
 
-from ..tools import unpack_kindle_book
-from ..utils.tempdir import create_tempdir
-from .epub import Epub
+from baca.ebooks.epub import Epub
+from baca.tools import unpack_kindle_book
+from baca.utils.tempdir import create_tempdir
 
 
 class Azw(Epub):

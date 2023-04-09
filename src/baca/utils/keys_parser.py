@@ -3,7 +3,7 @@ import inspect
 from textual import events
 from textual.actions import SkipAction
 
-from ..models import KeyMap
+from baca.models import KeyMap
 
 
 async def dispatch_key(maps: list[KeyMap], event: events.Key, *, propagate: bool = True) -> None:

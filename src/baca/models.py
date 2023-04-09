@@ -3,9 +3,16 @@ from datetime import datetime
 from enum import Enum
 from typing import Callable, Literal
 
-from peewee import CharField, DateTimeField, FloatField, IntegerField, Model, SqliteDatabase
+from peewee import (
+    CharField,
+    DateTimeField,
+    FloatField,
+    IntegerField,
+    Model,
+    SqliteDatabase,
+)
 
-from .utils.user_appdirs import retrieve_user_cache_dbfile
+from baca.utils.user_appdirs import retrieve_user_cache_dbfile
 
 db = SqliteDatabase(retrieve_user_cache_dbfile())
 

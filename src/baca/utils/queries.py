@@ -2,7 +2,7 @@ import warnings
 from pathlib import Path
 from typing import Iterator
 
-from ..models import ReadingHistory
+from baca.models import ReadingHistory
 
 MIN_FUZZY_MATCH_RATIO = 10
 

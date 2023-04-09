@@ -3,10 +3,10 @@ import sys
 from rich.console import Console
 from rich.text import Text
 
-from .app import Baca
-from .db import migrate
-from .exceptions import EbookNotFound, FormatNotSupported
-from .utils.cli import find_file, get_ebook_class
+from baca.app import Baca
+from baca.db import migrate
+from baca.exceptions import EbookNotFound, FormatNotSupported
+from baca.utils.cli import find_file, get_ebook_class
 
 
 def main():

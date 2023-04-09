@@ -10,17 +10,23 @@ from textual.app import App, ComposeResult
 from textual.css.query import NoMatches
 from textual.widgets import LoadingIndicator
 
-from .components.contents import Content
-from .components.events import DoneLoading, FollowThis, OpenThisImage, Screenshot, SearchSubmitted
-from .components.windows import Alert, DictDisplay, SearchInputPrompt, ToC
-from .config import load_config
-from .ebooks import Ebook
-from .exceptions import LaunchingFileError
-from .models import Coordinate, KeyMap, ReadingHistory, SearchMode
-from .utils.app_resources import get_resource_file
-from .utils.keys_parser import dispatch_key
-from .utils.systems import launch_file
-from .utils.urls import is_url
+from baca.components.contents import Content
+from baca.components.events import (
+    DoneLoading,
+    FollowThis,
+    OpenThisImage,
+    Screenshot,
+    SearchSubmitted,
+)
+from baca.components.windows import Alert, DictDisplay, SearchInputPrompt, ToC
+from baca.config import load_config
+from baca.ebooks import Ebook
+from baca.exceptions import LaunchingFileError
+from baca.models import Coordinate, KeyMap, ReadingHistory, SearchMode
+from baca.utils.app_resources import get_resource_file
+from baca.utils.keys_parser import dispatch_key
+from baca.utils.systems import launch_file
+from baca.utils.urls import is_url
 
 
 class Baca(App):

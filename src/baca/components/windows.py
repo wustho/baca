@@ -5,10 +5,10 @@ from textual.reactive import reactive
 from textual.widget import Widget
 from textual.widgets import Input, Static
 
-from ..models import Config, KeyMap, TocEntry
-from ..utils.keys_parser import dispatch_key
-from .contents import Table
-from .events import FollowThis, Screenshot, SearchSubmitted
+from baca.components.contents import Table
+from baca.components.events import FollowThis, Screenshot, SearchSubmitted
+from baca.models import Config, KeyMap, TocEntry
+from baca.utils.keys_parser import dispatch_key
 
 
 class SearchInputPrompt(Input):
@@ -149,8 +149,8 @@ class ToC(Window):
             KeyMap(keymaps.close + config.keymaps.open_toc, self.action_close),
             KeyMap(keymaps.scroll_down, lambda: self.action_select_next(1)),
             KeyMap(keymaps.scroll_up, lambda: self.action_select_next(-1)),
-            KeyMap(keymaps.home, lambda: self.entry_widgets[0].focus()),
-            KeyMap(keymaps.end, lambda: self.entry_widgets[-1].focus()),
+            KeyMap(keymaps.home, lambda: self.action_select_index(0)),
+            KeyMap(keymaps.end, lambda: self.action_select_index(-1)),
             KeyMap(keymaps.confirm, self.follow_nav_point),
             KeyMap(keymaps.screenshot, lambda: self.post_message(Screenshot())),
         ]
@@ -164,6 +164,9 @@ class ToC(Window):
 
     def action_select_next(self, n: int) -> None:
         self.index = (self.index + n) % len(self.entries)
+
+    def action_select_index(self, n: int) -> None:
+        self.index = n
 
     def compose(self) -> ComposeResult:
         yield from self.entry_widgets

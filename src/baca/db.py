@@ -18,8 +18,8 @@ obj2.save()
 Read more: http://docs.peewee-orm.com/en/latest/peewee/models.html?highlight=force_insert#id4
 """
 
-from .exceptions import TableDoesNotExist
-from .models import DbMetadata, Migration, ReadingHistory, db
+from baca.exceptions import TableDoesNotExist
+from baca.models import DbMetadata, Migration, ReadingHistory, db
 
 
 def initial_migration() -> None:
@@ -37,7 +37,7 @@ def migrate() -> None:
         for migration in sorted(MIGRATIONS, key=lambda x: x.version):
             try:
                 if not DbMetadata.table_exists():
-                    raise TableDoesNotExist
+                    raise TableDoesNotExist()
                 DbMetadata.get_by_id(migration.version)
             except (DbMetadata.DoesNotExist, TableDoesNotExist):
                 migration.migrate()

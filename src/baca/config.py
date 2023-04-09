@@ -1,8 +1,8 @@
 from configparser import ConfigParser
 from typing import Literal, cast
 
-from .models import Color, Config, Keymaps
-from .utils.user_appdirs import DEFAULT_CONFIG, retrieve_user_config_file
+from baca.models import Color, Config, Keymaps
+from baca.utils.user_appdirs import DEFAULT_CONFIG, retrieve_user_config_file
 
 
 def parse_keymaps(config_map: str) -> list[str]:

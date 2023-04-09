@@ -4,7 +4,7 @@ from urllib.parse import urljoin
 from bs4 import BeautifulSoup
 from markdownify import MarkdownConverter as _MarkdownConverter
 
-from ..models import Segment, SegmentType
+from baca.models import Segment, SegmentType
 
 
 class MarkdownConverter(_MarkdownConverter):

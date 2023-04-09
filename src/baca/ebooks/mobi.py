@@ -5,10 +5,10 @@ import xml.etree.ElementTree as ET
 from enum import Enum
 from pathlib import Path
 
-from .. import __appname__
-from ..models import TocEntry
-from ..tools import unpack_kindle_book
-from .epub import Epub
+from baca import __appname__
+from baca.ebooks.epub import Epub
+from baca.models import TocEntry
+from baca.tools import unpack_kindle_book
 
 
 class MobiVersion(Enum):

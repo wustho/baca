@@ -12,10 +12,10 @@ from textual.widget import Widget
 from textual.widgets import DataTable
 from textual.widgets.markdown import Markdown as PrettyMarkdown
 
-from ..ebooks import Ebook
-from ..models import Config, Coordinate, SegmentType
-from ..utils.urls import is_url
-from .events import OpenThisImage
+from baca.components.events import OpenThisImage
+from baca.ebooks import Ebook
+from baca.models import Config, Coordinate, SegmentType
+from baca.utils.urls import is_url
 
 
 class Table(DataTable):

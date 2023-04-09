@@ -6,7 +6,7 @@ __all__ = [
 ]
 
 
-from .azw import Azw
-from .base import Ebook
-from .epub import Epub
-from .mobi import Mobi
+from baca.ebooks.azw import Azw
+from baca.ebooks.base import Ebook
+from baca.ebooks.epub import Epub
+from baca.ebooks.mobi import Mobi

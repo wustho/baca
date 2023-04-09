@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "baca"
-version = "0.1.13"
+version = "0.1.14"
 description = "TUI Ebook Reader"
 authors = ["Benawi Adha <benawiadha@gmail.com>"]
 license = "GPL-3.0"
@@ -42,4 +42,5 @@ target-version = ['py310']
 exclude = "src/baca/tools/"
 
 [tool.isort]
+profile = "black"
 skip = "src/baca/tools/"

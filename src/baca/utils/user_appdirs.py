@@ -3,8 +3,8 @@ from pathlib import Path
 
 import appdirs
 
-from .. import __appname__
-from .app_resources import get_resource_file
+from baca import __appname__
+from baca.utils.app_resources import get_resource_file
 
 DEFAULT_CONFIG = get_resource_file("config.ini")
 
