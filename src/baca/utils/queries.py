@@ -16,9 +16,12 @@ def get_all_reading_history() -> Iterator[ReadingHistory]:
 
 
 def get_best_match_from_history(pattern: str) -> Path | None:
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
-        from fuzzywuzzy import fuzz
+    try:
+        from thefuzz import fuzz
+    except:
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            from fuzzywuzzy import fuzz
 
     match_ratios = [
         (rh.filepath, fuzz.ratio(tomatch, pattern))
