@@ -18,7 +18,7 @@ def get_all_reading_history() -> Iterator[ReadingHistory]:
 def get_best_match_from_history(pattern: str) -> Path | None:
     try:
         from thefuzz import fuzz
-    except:
+    except ImportError:
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             from fuzzywuzzy import fuzz
