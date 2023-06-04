@@ -175,10 +175,10 @@ class Content(Widget):
                 break
 
     def on_mouse_scroll_down(self, _: events.MouseScrollDown) -> None:
-        self.screen.scroll_down()
+        self.scroll_down()
 
     def on_mouse_scroll_up(self, _: events.MouseScrollUp) -> None:
-        self.screen.scroll_up()
+        self.scroll_up()
 
     # NOTE: override initial message
     def render(self):
