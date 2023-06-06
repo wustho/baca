@@ -76,6 +76,11 @@ class Image(SegmentWidget):
 
     def render(self):
         return Text("IMAGE", justify="center")
+        # TODO:
+        import climage
+
+        ansi_out = climage.convert("tmp/cover.jpg", is_unicode=True, width=60)
+        return Text.from_ansi(ansi_out, justify="center")
 
     # TODO: "Click ot Open" on mouse hover
     # def on_mouse_move(self, _: events.MouseMove) -> None:
