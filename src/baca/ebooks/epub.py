@@ -180,7 +180,8 @@ class Epub(Ebook):
 
     def get_img_bytestr(self, impath: str) -> tuple[str, bytes]:
         assert isinstance(self._file, zipfile.ZipFile)
-        return os.path.basename(impath), self._file.read(impath)
+        unquoted_impath = unquote(impath)
+        return os.path.basename(unquoted_impath), self._file.read(unquoted_impath)
 
     def iter_parsed_contents(self) -> Iterator[Segment]:
         toc_entries = self.get_toc()
