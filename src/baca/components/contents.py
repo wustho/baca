@@ -228,6 +228,10 @@ class Content(Widget):
         if not self.config.show_image_as_ansi:
             return
 
+        # TODO: lazy load the images
+        # 1. Need to change how reading prog saved
+        #    instead of global 30%, save local by segment (ie. segment 3, 60%)
+        # 2. Only load image when scrolled in view. (Checkout `scroll_visible` in Widget/Screen)
         for segment in self._segments:
             if isinstance(segment, Image):
                 segment.show_ansi_image()
