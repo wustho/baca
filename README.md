@@ -1,6 +1,6 @@
-# `baca`: TUI Ebook Reader
+# `baca`: TUI E-book Reader
 
-![baca_fit](https://user-images.githubusercontent.com/43810055/227891952-45df1c36-5113-4793-84b6-249725d3ba19.png)
+![baca_screenshots](https://github.com/wustho/baca/assets/43810055/82d5beb0-d061-4e4c-82ed-a3bd84074d2f)
 
 Meet `baca`, [epy](https://github.com/wustho/epy)'s lovely sister who lets you indulge
 in your favorite e-books in the comfort of your terminal.
@@ -10,11 +10,11 @@ But with a sleek and contemporary appearance that's sure to captivate you!
 
 - Formats supported: Epub, Epub3, Mobi & Azw
 - Remembers last reading position
+- Show images as ANSI image & you can click it for more detail
 - Scroll animations
 - Clean & modern looks
-- Lets you open images
 - Text justification
-- Dark & light colorscheme
+- Dark & light color scheme
 - Regex search
 - Hyperlinks
 
@@ -50,7 +50,8 @@ baca alice wonder lewis carroll
 
 ## Opening an Image
 
-To open an image, when you encounter some thing like this:
+To open an image, when you encounter an ANSI image (when `ShowImageAsANSI=yes`) or some thing like this
+(if `ShowImageAsANSI=no`):
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────┐
@@ -58,8 +59,21 @@ To open an image, when you encounter some thing like this:
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
-just click on it using mouse and it will open the image.
+just click on it using mouse and it will open the image using system app.
 Yeah, I know you want to use keyboard for this, me too, but bear with this for now.
+
+> "Why show the images as ANSI images instead of render it directly on terminal like ranger does?"
+
+1. The main reason is that currently, rendering images directly on the terminal
+   doesn't allow for partial scrolling of the image.
+   This means that we can't display only a portion (e.g., 30%) of the image when scrolling,
+   resulting in a broken and non-seamless scrolling experience.
+
+2. My primary intention in developing this app is for reading fiction e-books rather than technical ones,
+   and most fiction e-books don't contain many images.
+
+3. Displaying images on the terminal requires different implementations for various terminal emulators,
+   which requires a lot of maintenance.
 
 ## Configurations
 
@@ -84,6 +98,12 @@ TextJustification = justify
 Pretty = no
 
 PageScrollDuration = 0.2
+
+# either show image as ansii image
+# or text 'IMAGE' as a placehoder
+# (showing ansii image will affect
+# performance & resource usage)
+ShowImageAsANSII = yes
 
 [Color Dark]
 Background = #1e1e1e

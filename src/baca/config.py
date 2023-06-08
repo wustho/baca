@@ -31,6 +31,7 @@ def load_config() -> Config:
         ),
         pretty=bool(get_value("General", "Pretty", True)),
         page_scroll_duration=float(get_value("General", "PageScrollDuration")),
+        show_image_as_ansi=bool(get_value("General", "ShowImageAsANSI", True)),
         dark=Color(
             bg=str(get_value("Color Dark", "Background")),
             fg=str(get_value("Color Dark", "Foreground")),

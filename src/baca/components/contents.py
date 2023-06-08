@@ -1,7 +1,10 @@
+import io
 import re
 from marshal import dumps
 from urllib.parse import urljoin
 
+from climage import climage
+from PIL import Image as PILImage
 from rich.markdown import Markdown
 from rich.text import Text
 from textual import events
@@ -44,7 +47,7 @@ class SegmentWidget(Widget):
 
 
 class Body(SegmentWidget):
-    def __init__(self, config: Config, content: str, nav_point: str | None = None):
+    def __init__(self, _: Ebook, config: Config, content: str, nav_point: str | None = None):
         super().__init__(config, nav_point)
         self.content = content
 
@@ -69,18 +72,29 @@ class Body(SegmentWidget):
 
 
 class Image(SegmentWidget):
-    def __init__(self, config: Config, src: str, nav_point: str | None = None):
+    def __init__(self, ebook: Ebook, config: Config, src: str, nav_point: str | None = None):
         super().__init__(config, nav_point)
         # TODO: maybe put it in Widget.id?
         self.content = src
+        self.ebook = ebook
+        self._renderable = Text("IMAGE", justify="center")
 
     def render(self):
-        return Text("IMAGE", justify="center")
-        # TODO:
-        import climage
+        return self._renderable
 
-        ansi_out = climage.convert("tmp/cover.jpg", is_unicode=True, width=60)
-        return Text.from_ansi(ansi_out, justify="center")
+    def show_ansi_image(self):
+        img = PILImage.open(io.BytesIO(self.ebook.get_img_bytestr(self.content)[1])).convert("RGB")
+        img_ansi = climage._toAnsi(
+            img,
+            # NOTE: -1 for precaution on rounding of screen width
+            oWidth=self.size.width - 1,
+            is_unicode=True,
+            color_type=climage._color_types.truecolor,
+            palette="default",
+        )
+        img.close()
+        self._renderable = Text.from_ansi(img_ansi)
+        self.refresh(layout=True)
 
     # TODO: "Click ot Open" on mouse hover
     # def on_mouse_move(self, _: events.MouseMove) -> None:
@@ -91,7 +105,7 @@ class Image(SegmentWidget):
 
 
 class PrettyBody(PrettyMarkdown):
-    def __init__(self, config: Config, value: str, nav_point: str | None = None):
+    def __init__(self, _: Ebook, config: Config, value: str, nav_point: str | None = None):
         super().__init__(value)
         self.nav_point = nav_point
 
@@ -148,7 +162,7 @@ class Content(Widget):
                 component_cls = Body if not config.pretty else PrettyBody
             else:
                 component_cls = Image
-            self._segments.append(component_cls(self.config, segment.content, segment.nav_point))
+            self._segments.append(component_cls(ebook, self.config, segment.content, segment.nav_point))
 
     def get_navigables(self):
         return [s for s in self._segments if s.nav_point is not None]
@@ -209,6 +223,18 @@ class Content(Widget):
 
     def scroll_to_widget(self, *args, **kwargs) -> bool:
         return self.screen.scroll_to_widget(*args, **kwargs)
+
+    def show_ansi_images(self):
+        if not self.config.show_image_as_ansi:
+            return
+
+        for segment in self._segments:
+            if isinstance(segment, Image):
+                segment.show_ansi_image()
+        self.refresh(layout=True)
+
+    def on_resize(self):
+        self.show_ansi_images()
 
     # Already handled by self.styles.max_width
     # async def on_resize(self, event: events.Resize) -> None:

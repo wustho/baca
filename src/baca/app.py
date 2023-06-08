@@ -69,7 +69,7 @@ class Baca(App):
         # NOTE: await to prevent broken layout
         await self.mount(event.content)
 
-        def init_render() -> None:
+        def restore_reading_progress() -> None:
             # restore reading progress
             # make sure to call this after refresh so the screen.max_scroll_y != 0
             self.reading_progress = self.ebook_state.reading_progress * self.screen.max_scroll_y
@@ -77,7 +77,12 @@ class Baca(App):
 
             self.get_widget_by_id("startup-loader", LoadingIndicator).remove()
 
-        self.call_after_refresh(init_render)
+        def show_images() -> None:
+            self.content.show_ansi_images()
+            self.refresh(layout=True)
+            self.call_after_refresh(restore_reading_progress)
+
+        self.call_after_refresh(show_images)
 
     def on_mount(self):
         def screen_watch_scroll_y_wrapper(old_watcher, screen):

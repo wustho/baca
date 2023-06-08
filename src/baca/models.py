@@ -87,6 +87,7 @@ class Config:
     text_justification: Literal["default", "center", "full", "right", "left"]
     pretty: bool
     page_scroll_duration: float
+    show_image_as_ansi: bool
     dark: Color
     light: Color
     keymaps: Keymaps
