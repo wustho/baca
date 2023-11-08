@@ -26,6 +26,14 @@ Screen {
   layers: content search windows;
 }
 
+.-dark-mode Screen {
+  background: $dark-bg;
+}
+
+.-light-mode Screen {
+  background: $light-bg;
+}
+
 LoadingIndicator {
   layer: windows;
 }
