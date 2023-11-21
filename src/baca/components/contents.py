@@ -89,7 +89,7 @@ class Image(SegmentWidget):
             # NOTE: -1 for precaution on rounding of screen width
             oWidth=self.size.width - 1,
             is_unicode=True,
-            color_type=climage._color_types.truecolor,
+            color_type=climage.color_types.truecolor,
             palette="default",
         )
         img.close()
